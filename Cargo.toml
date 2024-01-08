@@ -1,8 +1,19 @@
 [package]
 name = "lovem"
-version = "0.1.0"
-edition = "2021"
+version = "0.0.0"
+authors = ["j-stach"]
+description = "A safer wrapper for LLVM bindings"
+license = "MIT"
+repository = "https://github.com/j-stach/lovem"
+homepage = "https://github.com/j-stach/lovem"
+# documentation = "https://docs.rs/llvm/"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+categories = ["api-bindings"]
+keywords = ["llvm"]
 
 [dependencies]
+libc = "*"
+anyhow = "1.0.79"
+llvm-sys = "130" # Uses the most current version of LLVM supported by llvmenv, 13.0.0
+derive_more = "0.99.17"
+# thiserror = "1.0.56" # TODO Use to build error types in final version?
