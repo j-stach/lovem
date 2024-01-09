@@ -102,6 +102,7 @@ impl Context {
 /*
     LLVMGetTypeByName2⚠
 
+    LLVMStructTypeInContext⚠
     LLVMTokenTypeInContext⚠
     LLVMFloatTypeInContext⚠
     LLVMHalfTypeInContext⚠

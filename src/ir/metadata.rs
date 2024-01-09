@@ -13,4 +13,8 @@
     LLVMGetNamedMetadataName⚠
     LLVMGetNamedMetadataNumOperands⚠
     LLVMGetNamedMetadataOperands⚠
+
+    LLVMValueMetadataEntriesGetKind⚠
+    LLVMValueMetadataEntriesGetMetadata⚠
+    LLVMDisposeValueMetadataEntries⚠
 */

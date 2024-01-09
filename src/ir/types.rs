@@ -49,6 +49,10 @@ macro_rules! llvm_type {
             pub fn new($($($argn: $argv),*)?) -> Self {
                 unsafe { Self($fn($($($argn),*)?)) }
             }
+            pub fn wrap(target_typ: LLVMTypeRef) -> Self {
+                // TODO Make safe, specific using LLVMTypeKind and matching
+                Self(target_typ)
+            }
         }
 
         impl Type for $t {}
