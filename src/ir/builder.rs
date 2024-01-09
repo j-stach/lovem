@@ -29,7 +29,11 @@ impl Drop for Builder {
 impl Builder {
     /// TODO Docs
     pub fn new() -> Self {
-        let builder = unsafe { llvm::LLVMCreateBuilder() };
+        unsafe { Self(llvm::LLVMCreateBuilder()) }
+    }
+
+    /// TODO Docs
+    pub fn wrap(builder: LLVMBuilderRef) -> Self {
         Self(builder)
     }
 
@@ -79,7 +83,7 @@ impl Builder {
 /// Generates functions representing LLVM IR build instructions
 // TODO MERGE THESE MACROS INTO ONE: build_op!()
 // TODO automatically prefix $op_name with "build_"
-// TODO dynamically accomodate &str and &mut [...] conversions
+// TODO dynamically accomodate &str and &mut [_] conversions
 // TODO add variable return
 macro_rules! op {
     ($op_name:ident, $fn:path $(, $($argn:ident: $argv:path),*)?) => {
