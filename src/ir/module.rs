@@ -23,4 +23,13 @@
     LLVMGetModuleInlineAsm⚠
     LLVMDisposeModuleFlagsMetadata⚠
     LLVMCopyModuleFlagsMetadata⚠
+
+    LLVMAddAlias⚠
+    LLVMAddFunction⚠
+    LLVMAddGlobal⚠
+    LLVMAddGlobalIFunc⚠
+    LLVMAddGlobalInAddressSpace⚠
+    LLVMAddModuleFlag⚠
+    LLVMAddNamedMetadataOperand⚠
+
 */
