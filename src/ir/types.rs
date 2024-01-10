@@ -2,40 +2,63 @@
 use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
-use derive_more::{Deref, DerefMut};
+use crate::wrapper::Wrapper;
 
+//
+//        match llvm::LLVMGetTypeKind($typ_ref) {
+//            LLVMTypeKind::LLVMVoidTypeKind            => Void,
+//            LLVMTypeKind::LLVMHalfTypeKind            => Half,
+//            LLVMTypeKind::LLVMFloatTypeKind           => Float,
+//            LLVMTypeKind::LLVMDoubleTypeKind          => Double,
+//            LLVMTypeKind::LLVMX86_FP80TypeKind        => X86FP80,
+//            LLVMTypeKind::LLVMFP128TypeKind           => FP128,
+//            LLVMTypeKind::LLVMPPC_FP128TypeKind       => PPCFP128,
+//            LLVMTypeKind::LLVMLabelTypeKind           => Label,
+//            LLVMTypeKind::LLVMIntegerTypeKind         => Int,
+//            LLVMTypeKind::LLVMFunctionTypeKind        => Function,
+//            LLVMTypeKind::LLVMStructTypeKind          => Struct,
+//            LLVMTypeKind::LLVMArrayTypeKind           => Array,
+//            LLVMTypeKind::LLVMPointerTypeKind         => Pointer,
+//            LLVMTypeKind::LLVMVectorTypeKind          => Vector,
+//            LLVMTypeKind::LLVMMetadataTypeKind        => Metadata,
+//            LLVMTypeKind::LLVMX86_MMXTypeKind         => X86MMX,
+//            LLVMTypeKind::LLVMTokenTypeKind           => Token,
+//            LLVMTypeKind::LLVMScalableVectorTypeKind  => ScalableVector,
+//            LLVMTypeKind::LLVMBFloatTypeKind          => BFloat,
+//            LLVMTypeKind::LLVMX86_AMXTypeKind         => X86AMX,
+//        })
+//
 
-pub trait Type: std::ops::DerefMut<Target = LLVMTypeRef> {
+pub trait Type: Wrapper<Llvm = LLVMTypeRef> {
     // TODO Docs
     fn is_sized(&self) -> LLVMBool {
-        unsafe { llvm::LLVMTypeIsSized(*self.deref()) }
-    }
-
-    // TODO Docs
-    fn type_of(val: LLVMValueRef) -> LLVMTypeRef { // TODO Match & wrap
-        unsafe { llvm::LLVMTypeOf(val) }
+        unsafe { llvm::LLVMTypeIsSized(*self.expose()) }
     }
 
     /// Prints a textual representation of the type to the error stream
     fn dump(&self) {
-        unsafe { llvm::LLVMDumpType(*self.deref()) }
+        unsafe { llvm::LLVMDumpType(*self.expose()) }
     }
 
     // TODO Docs
     fn context(&self) -> super::context::Context {
         super::context::Context::wrap(
-            unsafe { llvm::LLVMGetTypeContext(*self.deref()) }
+            unsafe { llvm::LLVMGetTypeContext(*self.expose()) }
         )
     }
 
     // TODO Docs
     fn kind(&self) -> LLVMTypeKind {
-        unsafe { llvm::LLVMGetTypeKind(*self.deref()) }
+        unsafe { llvm::LLVMGetTypeKind(*self.expose()) }
     }
 
     // TODO Docs
     fn to_string(&self) -> String {
-        c_str_to_str!(llvm::LLVMPrintTypeToString(*self.deref())).to_string()
+        cstr_to_str!(llvm::LLVMPrintTypeToString(*self.expose())).to_string()
+    }
+
+    fn upcast(typ_ref: LLVMTypeRef) -> Option<Box<dyn Type>> {
+        todo![]
     }
 }
 
@@ -43,21 +66,19 @@ pub trait Type: std::ops::DerefMut<Target = LLVMTypeRef> {
 /// TODO Docs, Testing
 macro_rules! llvm_type {
     ($t:ident, $fn:path $(, $($argn:ident: $argv:path),*)?) => {
-        #[derive(Deref, DerefMut)]
-        pub struct $t (LLVMTypeRef);
+        wrapper!($t, LLVMTypeRef);
+        impl Type for $t {}
         impl $t {
             pub fn new($($($argn: $argv),*)?) -> Self {
                 unsafe { Self($fn($($($argn),*)?)) }
             }
-            pub fn wrap(target_typ: LLVMTypeRef) -> Self {
-                // TODO Make safe, specific using LLVMTypeKind and matching
-                Self(target_typ)
-            }
         }
-
-        impl Type for $t {}
     };
 }
+
+// Token type
+wrapper!(Token, LLVMTypeRef);
+impl Type for Token {}
 
 // Pointers
 llvm_type!(Pointer, llvm::LLVMPointerType, typ: LLVMTypeRef, addr: u32);
@@ -70,6 +91,7 @@ llvm_type!(Int16, llvm::LLVMInt16Type);
 llvm_type!(Int32, llvm::LLVMInt32Type);
 llvm_type!(Int64, llvm::LLVMInt64Type);
 llvm_type!(Int128, llvm::LLVMInt128Type);
+llvm_type!(Int, llvm::LLVMIntType, num_bits: u32);
 
 // Floating Point
 llvm_type!(Float, llvm::LLVMFloatType);
@@ -90,8 +112,7 @@ llvm_type!(X86AMX, llvm::LLVMX86AMXType);
 llvm_type!(X86MMX, llvm::LLVMX86MMXType);
 
 // Function type
-#[derive(Deref, DerefMut)]
-pub struct Function(LLVMTypeRef);
+wrapper!(Function, LLVMTypeRef);
 impl Type for Function {}
 impl Function {
     pub fn new(ret_typ: LLVMTypeRef, param_types: &mut [LLVMTypeRef], is_var_arg: LLVMBool) -> Self {
@@ -101,11 +122,12 @@ impl Function {
     }
 }
 
-
-
-
-
-
+// Raw type for protecting data retrieved from reference
+wrapper!(RawTypeRef, LLVMTypeRef);
+impl Type for RawTypeRef {}
+impl RawTypeRef {
+    // TODO Need a function that can recontextualize the type
+}
 
 
 

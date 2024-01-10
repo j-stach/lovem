@@ -4,14 +4,18 @@ use std::ffi::CString;
 use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
-use derive_more::{Deref, DerefMut};
+use crate::wrapper::Wrapper;
 
 
-// TODO Docs
-#[derive(Deref, DerefMut)]
-pub struct Value(LLVMValueRef);
+wrapper!(Value, LLVMValueRef);
 
 impl Value {
+
+    // TODO Docs
+    fn type_of(val: LLVMValueRef) -> LLVMTypeRef { // TODO Match & wrap
+        unsafe { llvm::LLVMTypeOf(val) }
+    }
+
     // TODO Docs
     pub fn as_basic_block(&self) -> LLVMBasicBlockRef {
         unsafe { llvm::LLVMValueAsBasicBlock(self.0) }
@@ -30,7 +34,7 @@ impl Value {
     // TODO Docs
     pub fn name(&self) -> String {
         let ref mut len: usize = 0;
-        c_str_to_str!(llvm::LLVMGetValueName2(self.0, len)).to_string()
+        cstr_to_str!(llvm::LLVMGetValueName2(self.0, len)).to_string()
     }
 
     // TODO Docs
@@ -46,7 +50,7 @@ impl Value {
 
     // TODO Docs
     pub fn to_string(&self) -> String {
-        c_str_to_str!(llvm::LLVMPrintValueToString(self.0)).to_string()
+        cstr_to_str!(llvm::LLVMPrintValueToString(self.0)).to_string()
     }
 
     /// Prints a textual representation of the type to the error stream
@@ -65,14 +69,14 @@ impl Value {
     }
 
     // TODO Docs
-    pub fn get_allocated_type(&self) -> LLVMTypeRef {
+    pub fn get_allocated_type(&self) -> LLVMTypeRef { //TODO Match & wrap
         unsafe { llvm::LLVMGetAllocatedType(self.0) }
     }
 
     // TODO Docs
     pub fn get_as_string(&self) -> String {
         let ref mut len: usize = 0;
-        c_str_to_str!(llvm::LLVMGetAsString(self.0, len)).to_string()
+        cstr_to_str!(llvm::LLVMGetAsString(self.0, len)).to_string()
     }
 }
 
@@ -92,3 +96,59 @@ impl Value {
 
 }
 
+pub enum ValueKind {
+    Argument,
+    BasicBlock,
+    MemoryUse,
+    MemoryDef,
+    MemoryPhi,
+    Function,
+    GlobalAlias,
+    GlobalIFunc,
+    GlobalVariable,
+    BlockAddress,
+    ConstantExpr,
+    ConstantArray,
+    ConstantStruct,
+    ConstantVector,
+    UndefValue,
+    ConstantAggregateZero,
+    ConstantDataArray,
+    ConstantDataVector,
+    ConstantInt,
+    ConstantFP,
+    ConstantPointerNull,
+    ConstantTokenNone,
+    MetadataAsValue,
+    InlineAsm,
+    Instruction,
+    Poison,
+}
+/*
+ArgumentValue,
+BasicBlockValue,
+MemoryUseValue,
+MemoryDefValue,
+MemoryPhiValue,
+FunctionValue,
+GlobalAliasValue,
+GlobalIFuncValue,
+GlobalVariableValue,
+BlockAddressValue,
+ConstantExprValue,
+ConstantArrayValue,
+ConstantStructValue,
+ConstantVectorValue,
+UndefValueValue,
+ConstantAggregateZeroValue,
+ConstantDataArrayValue,
+ConstantDataVectorValue,
+ConstantIntValue,
+ConstantFPValue,
+ConstantPointerNullValue,
+ConstantTokenNoneValue,
+MetadataAsValueValue,
+InlineAsmValue,
+InstructionValue,
+PoisonValue,
+*/

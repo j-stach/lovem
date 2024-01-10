@@ -4,20 +4,16 @@ use std::ffi::CString;
 use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
-use derive_more::{Deref, DerefMut};
+use crate::wrapper::Wrapper;
 
 /*
     !! WARNING !!
 
     Types beginning in "LLVM" are unsafe pointers and should not be trusted.
-    TODO Need to create wrapper types and perform checking for specific type kinds
-
 */
 
 
-/// TODO Docs
-#[derive(Debug, Deref, DerefMut)]
-pub struct Builder(LLVMBuilderRef);
+wrapper!(Builder, LLVMBuilderRef);
 
 impl Drop for Builder {
     /// TODO Docs
@@ -33,19 +29,13 @@ impl Builder {
     }
 
     /// TODO Docs
-    pub fn wrap(builder: LLVMBuilderRef) -> Self {
-        Self(builder)
-    }
-
-    /// TODO Docs
     pub fn insert(&self, instruction: LLVMValueRef) {
         unsafe { llvm::LLVMInsertIntoBuilder(self.0, instruction) }
     }
 
     /// TODO Docs
     pub fn insert_with_name(&self, instruction: LLVMValueRef, name: &str) {
-        let c_name = CString::new(name).expect("Convert &str to CString");
-        unsafe { llvm::LLVMInsertIntoBuilderWithName(self.0, instruction, c_name.as_ptr()) }
+        unsafe { llvm::LLVMInsertIntoBuilderWithName(self.0, instruction, str_to_cstr!(name)) }
     }
 
     /// TODO Docs
@@ -91,7 +81,7 @@ macro_rules! op {
             /// TODO Dynamically-generated docs, maybe attribute macro?
             pub fn $op_name(&mut self $(, $($argn: $argv),*)?) -> LLVMValueRef {
                 unsafe {
-                    $fn(self.0 $(, $($argn),*)?)
+                    $fn(self.0 $(, $($argn),*)?)    // TODO Automatically convert args to LLVM types using macros?
                 }
             }
         }
@@ -105,9 +95,8 @@ macro_rules! op_with_name {
         impl Builder {
             /// TODO Docs
             pub fn $op_name(&mut self, $($argn: $argv),*, name: &str) -> LLVMValueRef {
-                let c_name = CString::new(name).expect("Convert &str to CString");
                 unsafe {
-                    $fn(self.0, $($argn),*, c_name.as_ptr())
+                    $fn(self.0, $($argn),*, str_to_cstr!(name))
                 }
             }
         }
@@ -147,16 +136,12 @@ op!(build_atomic_rmw, llvm::LLVMBuildAtomicRMW,
 impl Builder {
     // TODO Docs
     pub fn build_global_string(&self, string: &str, name: &str) -> LLVMValueRef {
-        let c_string = CString::new(string).expect("Convert &str to CString");
-        let c_name = CString::new(name).expect("Convert &str to CString");
-        unsafe { llvm::LLVMBuildGlobalString(self.0, c_string.as_ptr(), c_name.as_ptr()) }
+        unsafe { llvm::LLVMBuildGlobalString(self.0, str_to_cstr!(string), str_to_cstr!(name)) }
     }
 
     // TODO Docs
     pub fn build_global_string_ptr(&self, string: &str, name: &str) -> LLVMValueRef {
-        let c_string = CString::new(string).expect("Convert &str to CString");
-        let c_name = CString::new(name).expect("Convert &str to CString");
-        unsafe { llvm::LLVMBuildGlobalStringPtr(self.0, c_string.as_ptr(), c_name.as_ptr()) }
+        unsafe { llvm::LLVMBuildGlobalStringPtr(self.0, str_to_cstr!(string), str_to_cstr!(name)) }
     }
 }
 
@@ -219,49 +204,43 @@ op_with_name!(build_insert_value, llvm::LLVMBuildInsertValue, agg: LLVMValueRef,
 impl Builder {
     // TODO Docs, macro?
     pub fn build_gep(&self, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildGEP(self.0, ptr, slice.as_mut_ptr(), slice.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildGEP(self.0, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
     pub fn build_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildGEP2(self.0, typ, ptr, slice.as_mut_ptr(), slice.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildGEP2(self.0, typ, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
     pub fn build_in_bounds_gep(&self, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildInBoundsGEP(self.0, ptr, slice.as_mut_ptr(), slice.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildInBoundsGEP(self.0, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
     pub fn build_in_bounds_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildInBoundsGEP2(self.0, typ, ptr, slice.as_mut_ptr(), slice.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildInBoundsGEP2(self.0, typ, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
     pub fn build_struct_gep(&self, ptr: LLVMValueRef, index: u32, name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildStructGEP(self.0, ptr, index, c_name.as_ptr())
+            llvm::LLVMBuildStructGEP(self.0, ptr, index, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
     pub fn build_struct_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, index: u32, name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildStructGEP2(self.0, typ, ptr, index, c_name.as_ptr())
+            llvm::LLVMBuildStructGEP2(self.0, typ, ptr, index, str_to_cstr!(name))
         }
     }
 }
@@ -325,17 +304,15 @@ op!(build_unreachable, llvm::LLVMBuildUnreachable);
 impl Builder {
     // TODO Docs, macro?
     pub fn build_call(&self, function: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildCall(self.0, function, args.as_mut_ptr(), args.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildCall(self.0, function, args.as_mut_ptr(), args.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
     pub fn build_call_2(&self, typ: LLVMTypeRef, function: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildCall2(self.0, typ, function, args.as_mut_ptr(), args.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildCall2(self.0, typ, function, args.as_mut_ptr(), args.len() as u32, str_to_cstr!(name))
         }
     }
 }
@@ -369,7 +346,6 @@ impl Builder {
         catch: LLVMBasicBlockRef,
         name: &str
     ) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
             llvm::LLVMBuildInvoke(
                 self.0,
@@ -378,7 +354,7 @@ impl Builder {
                 args.len() as u32,
                 then,
                 catch,
-                c_name.as_ptr()
+                str_to_cstr!(name)
             )
         }
     }
@@ -393,7 +369,6 @@ impl Builder {
         catch: LLVMBasicBlockRef,
         name: &str
     ) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
             llvm::LLVMBuildInvoke2(
                 self.0,
@@ -403,24 +378,22 @@ impl Builder {
                 args.len() as u32,
                 then,
                 catch,
-                c_name.as_ptr()
+                str_to_cstr!(name)
             )
         }
     }
 
     // TODO Docs, macro?
     pub fn build_catch_pad(&self, pad: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
         unsafe {
-            llvm::LLVMBuildCatchPad(self.0, pad, args.as_mut_ptr(), args.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildCatchPad(self.0, pad, args.as_mut_ptr(), size!(args), str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
-    pub fn build_cleanup_pad(&self, pad: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
+    pub fn build_cleanup_pad(&self, pad: LLVMValueRef, args: Vec<super::value::Value>, name: &str) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildCleanupPad(self.0, pad, args.as_mut_ptr(), args.len() as u32, c_name.as_ptr())
+            llvm::LLVMBuildCleanupPad(self.0, pad, expose_array!(args), size!(args), str_to_cstr!(name))
         }
     }
 }

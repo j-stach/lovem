@@ -1,9 +1,7 @@
 /*
 
-    LLVMCreateBasicBlockInContext⚠
     LLVMDeleteBasicBlock⚠
     LLVMAppendBasicBlock⚠
-    LLVMAppendBasicBlockInContext⚠
     LLVMAppendExistingBasicBlock⚠
     LLVMGetBasicBlockName⚠
     LLVMGetBasicBlockParent⚠

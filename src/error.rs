@@ -2,8 +2,7 @@
 use std::ffi::CString;
 use llvm_sys::{error as err, error_handling as eh};
 
-use derive_more::{Deref, DerefMut};
-
+use super::wrapper::Wrapper;
 
 ///! Note:
 ///! "LLVMErrorRef" is an alias for "*mut LLVMOpaqueError"
@@ -13,9 +12,7 @@ use derive_more::{Deref, DerefMut};
 pub const SUCCESS: libc::c_int = err::LLVMErrorSuccess; // Just zero with extra steps
 
 
-/// TODO Docs
-#[derive(Debug, Deref, DerefMut)]
-pub struct Error(err::LLVMErrorRef); // Contains raw pointer, field is private for safety
+wrapper!(Error, err::LLVMErrorRef);
 
 impl Drop for Error {
     fn drop(&mut self) {
@@ -48,7 +45,7 @@ impl Error {
     // TODO Docs
     pub fn get_error_message(&mut self) -> &str {
         let msg = unsafe { err::LLVMGetErrorMessage(self.0) };
-        c_str_to_str!(msg)
+        cstr_to_str!(msg)
     }
 
     // TODO Docs, plus, does this need a Rusty return type?
