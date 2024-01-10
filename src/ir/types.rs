@@ -5,28 +5,6 @@ use llvm_sys::core as llvm;
 use crate::wrapper::Wrapper;
 
 //
-//        match llvm::LLVMGetTypeKind($typ_ref) {
-//            LLVMTypeKind::LLVMVoidTypeKind            => Void,
-//            LLVMTypeKind::LLVMHalfTypeKind            => Half,
-//            LLVMTypeKind::LLVMFloatTypeKind           => Float,
-//            LLVMTypeKind::LLVMDoubleTypeKind          => Double,
-//            LLVMTypeKind::LLVMX86_FP80TypeKind        => X86FP80,
-//            LLVMTypeKind::LLVMFP128TypeKind           => FP128,
-//            LLVMTypeKind::LLVMPPC_FP128TypeKind       => PPCFP128,
-//            LLVMTypeKind::LLVMLabelTypeKind           => Label,
-//            LLVMTypeKind::LLVMIntegerTypeKind         => Int,
-//            LLVMTypeKind::LLVMFunctionTypeKind        => Function,
-//            LLVMTypeKind::LLVMStructTypeKind          => Struct,
-//            LLVMTypeKind::LLVMArrayTypeKind           => Array,
-//            LLVMTypeKind::LLVMPointerTypeKind         => Pointer,
-//            LLVMTypeKind::LLVMVectorTypeKind          => Vector,
-//            LLVMTypeKind::LLVMMetadataTypeKind        => Metadata,
-//            LLVMTypeKind::LLVMX86_MMXTypeKind         => X86MMX,
-//            LLVMTypeKind::LLVMTokenTypeKind           => Token,
-//            LLVMTypeKind::LLVMScalableVectorTypeKind  => ScalableVector,
-//            LLVMTypeKind::LLVMBFloatTypeKind          => BFloat,
-//            LLVMTypeKind::LLVMX86_AMXTypeKind         => X86AMX,
-//        })
 //
 
 pub trait Type: Wrapper<Llvm = LLVMTypeRef> {
@@ -56,9 +34,34 @@ pub trait Type: Wrapper<Llvm = LLVMTypeRef> {
     fn to_string(&self) -> String {
         cstr_to_str!(llvm::LLVMPrintTypeToString(*self.expose())).to_string()
     }
+}
 
-    fn upcast(typ_ref: LLVMTypeRef) -> Option<Box<dyn Type>> {
-        todo![]
+// TODO Docs,
+// TODO Separate feature or private?
+pub fn type_from_ref(typ_ref: LLVMTypeRef) -> Box<dyn Type> {
+    unsafe {
+        match llvm::LLVMGetTypeKind(typ_ref) {
+            LLVMTypeKind::LLVMVoidTypeKind            => Box::new(Void::wrap(typ_ref)),
+            LLVMTypeKind::LLVMHalfTypeKind            => Box::new(Half::wrap(typ_ref)),
+            LLVMTypeKind::LLVMFloatTypeKind           => Box::new(Float::wrap(typ_ref)),
+            LLVMTypeKind::LLVMDoubleTypeKind          => Box::new(Double::wrap(typ_ref)),
+            LLVMTypeKind::LLVMX86_FP80TypeKind        => Box::new(X86FP80::wrap(typ_ref)),
+            LLVMTypeKind::LLVMFP128TypeKind           => Box::new(FP128::wrap(typ_ref)),
+            LLVMTypeKind::LLVMPPC_FP128TypeKind       => Box::new(PPCFP128::wrap(typ_ref)),
+            LLVMTypeKind::LLVMLabelTypeKind           => unimplemented!(),
+            LLVMTypeKind::LLVMIntegerTypeKind         => Box::new(Int::wrap(typ_ref)),
+            LLVMTypeKind::LLVMFunctionTypeKind        => Box::new(Function::wrap(typ_ref)),
+            LLVMTypeKind::LLVMStructTypeKind          => unimplemented!(),
+            LLVMTypeKind::LLVMArrayTypeKind           => Box::new(Array::wrap(typ_ref)),
+            LLVMTypeKind::LLVMPointerTypeKind         => Box::new(Pointer::wrap(typ_ref)),
+            LLVMTypeKind::LLVMVectorTypeKind          => Box::new(Vector::wrap(typ_ref)),
+            LLVMTypeKind::LLVMMetadataTypeKind        => unimplemented!(),
+            LLVMTypeKind::LLVMX86_MMXTypeKind         => Box::new(X86MMX::wrap(typ_ref)),
+            LLVMTypeKind::LLVMTokenTypeKind           => Box::new(Token::wrap(typ_ref)),
+            LLVMTypeKind::LLVMScalableVectorTypeKind  => Box::new(ScalableVector::wrap(typ_ref)),
+            LLVMTypeKind::LLVMBFloatTypeKind          => Box::new(BFloat::wrap(typ_ref)),
+            LLVMTypeKind::LLVMX86_AMXTypeKind         => Box::new(X86AMX::wrap(typ_ref)),
+        }
     }
 }
 
