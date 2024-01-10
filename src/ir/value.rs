@@ -12,7 +12,7 @@ wrapper!(Value, LLVMValueRef);
 impl Value {
 
     // TODO Docs
-    fn type_of(val: LLVMValueRef) -> LLVMTypeRef { // TODO Match & wrap
+    pub fn type_of(val: LLVMValueRef) -> LLVMTypeRef { // TODO Match & wrap
         unsafe { llvm::LLVMTypeOf(val) }
     }
 

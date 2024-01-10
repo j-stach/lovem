@@ -27,7 +27,24 @@ macro_rules! size {
     }}
 }
 
+#[allow(unused_macros)]
+macro_rules! bool_to_rust {
+    ($b:expr) => {{
+        unsafe {
+            $b > 0
+        }
+    }}
+}
 
+#[allow(unused_macros)]
+macro_rules! bool_to_llvm {
+    ($b:expr) => {{
+        match $b {
+            false => 0,
+            true => 1
+        }
+    }}
+}
 
 
 

@@ -8,7 +8,7 @@ pub trait Wrapper {
 
 macro_rules! wrapper {
     ($t:ident, $llvm:ty) => {
-        // TODO Dynamically link to LLVM documentation
+        #[doc = "TODO: Dynamically link to LLVM documentation"]
         #[derive(Debug)]
         pub struct $t ($llvm);
         impl Wrapper for $t {

@@ -68,6 +68,7 @@ macro_rules! llvm_type {
         wrapper!($t, LLVMTypeRef);
         impl Type for $t {}
         impl $t {
+            #[doc = "TODO: Dynamically generate docs"]
             pub fn new($($($argn: $argv),*)?) -> Self {
                 unsafe { Self($fn($($($argn),*)?)) }
             }
