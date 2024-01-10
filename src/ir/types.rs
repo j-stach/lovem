@@ -4,71 +4,67 @@ use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
 
-//
-//
 
 pub trait Type: Wrapper<Llvm = LLVMTypeRef> {
-    // TODO Docs
-    fn is_sized(&self) -> LLVMBool {
-        unsafe { llvm::LLVMTypeIsSized(*self.expose()) }
+    /// Returns true if the type is sized TODO Clarify
+    fn is_sized(&self) -> bool {
+        bool_to_rust!(llvm::LLVMTypeIsSized(expose!(self)))
     }
 
     /// Prints a textual representation of the type to the error stream
     fn dump(&self) {
-        unsafe { llvm::LLVMDumpType(*self.expose()) }
+        unsafe { llvm::LLVMDumpType(expose!(self)) }
     }
 
-    // TODO Docs
+    /// Get a new reference to the type's parent Context
     fn context(&self) -> super::context::Context {
         super::context::Context::wrap(
-            unsafe { llvm::LLVMGetTypeContext(*self.expose()) }
+            unsafe { llvm::LLVMGetTypeContext(expose!(self)) }
         )
     }
 
-    // TODO Docs
+    /// Returns the corresponding "kind" enum variant for the type
     fn kind(&self) -> LLVMTypeKind {
-        unsafe { llvm::LLVMGetTypeKind(*self.expose()) }
+        unsafe { llvm::LLVMGetTypeKind(expose!(self)) }
     }
 
-    // TODO Docs
+    /// Returns the name of the type as a string
     fn to_string(&self) -> String {
-        cstr_to_str!(llvm::LLVMPrintTypeToString(*self.expose())).to_string()
+        cstr_to_str!(llvm::LLVMPrintTypeToString(expose!(self))).to_string()
     }
 }
 
-// TODO Docs,
-// TODO Separate feature or private?
+/// Wraps a naked LLVMTypeRef with the corresponding safe type & stores it on the heap
 pub fn type_from_ref(typ_ref: LLVMTypeRef) -> Box<dyn Type> {
-    unsafe {
-        match llvm::LLVMGetTypeKind(typ_ref) {
-            LLVMTypeKind::LLVMVoidTypeKind            => Box::new(Void::wrap(typ_ref)),
-            LLVMTypeKind::LLVMHalfTypeKind            => Box::new(Half::wrap(typ_ref)),
-            LLVMTypeKind::LLVMFloatTypeKind           => Box::new(Float::wrap(typ_ref)),
-            LLVMTypeKind::LLVMDoubleTypeKind          => Box::new(Double::wrap(typ_ref)),
-            LLVMTypeKind::LLVMX86_FP80TypeKind        => Box::new(X86FP80::wrap(typ_ref)),
-            LLVMTypeKind::LLVMFP128TypeKind           => Box::new(FP128::wrap(typ_ref)),
-            LLVMTypeKind::LLVMPPC_FP128TypeKind       => Box::new(PPCFP128::wrap(typ_ref)),
-            LLVMTypeKind::LLVMLabelTypeKind           => unimplemented!(),
-            LLVMTypeKind::LLVMIntegerTypeKind         => Box::new(Int::wrap(typ_ref)),
-            LLVMTypeKind::LLVMFunctionTypeKind        => Box::new(Function::wrap(typ_ref)),
-            LLVMTypeKind::LLVMStructTypeKind          => unimplemented!(),
-            LLVMTypeKind::LLVMArrayTypeKind           => Box::new(Array::wrap(typ_ref)),
-            LLVMTypeKind::LLVMPointerTypeKind         => Box::new(Pointer::wrap(typ_ref)),
-            LLVMTypeKind::LLVMVectorTypeKind          => Box::new(Vector::wrap(typ_ref)),
-            LLVMTypeKind::LLVMMetadataTypeKind        => unimplemented!(),
-            LLVMTypeKind::LLVMX86_MMXTypeKind         => Box::new(X86MMX::wrap(typ_ref)),
-            LLVMTypeKind::LLVMTokenTypeKind           => Box::new(Token::wrap(typ_ref)),
-            LLVMTypeKind::LLVMScalableVectorTypeKind  => Box::new(ScalableVector::wrap(typ_ref)),
-            LLVMTypeKind::LLVMBFloatTypeKind          => Box::new(BFloat::wrap(typ_ref)),
-            LLVMTypeKind::LLVMX86_AMXTypeKind         => Box::new(X86AMX::wrap(typ_ref)),
-        }
-    }
+    unsafe { match llvm::LLVMGetTypeKind(typ_ref) {
+        LLVMTypeKind::LLVMVoidTypeKind            => Box::new(Void::wrap(typ_ref)),
+        LLVMTypeKind::LLVMHalfTypeKind            => Box::new(Half::wrap(typ_ref)),
+        LLVMTypeKind::LLVMFloatTypeKind           => Box::new(Float::wrap(typ_ref)),
+        LLVMTypeKind::LLVMDoubleTypeKind          => Box::new(Double::wrap(typ_ref)),
+        LLVMTypeKind::LLVMX86_FP80TypeKind        => Box::new(X86FP80::wrap(typ_ref)),
+        LLVMTypeKind::LLVMFP128TypeKind           => Box::new(FP128::wrap(typ_ref)),
+        LLVMTypeKind::LLVMPPC_FP128TypeKind       => Box::new(PPCFP128::wrap(typ_ref)),
+        LLVMTypeKind::LLVMLabelTypeKind           => unimplemented!(),                      // TODO
+        LLVMTypeKind::LLVMIntegerTypeKind         => Box::new(Int::wrap(typ_ref)),
+        LLVMTypeKind::LLVMFunctionTypeKind        => Box::new(Function::wrap(typ_ref)),
+        LLVMTypeKind::LLVMStructTypeKind          => unimplemented!(),                      // TODO
+        LLVMTypeKind::LLVMArrayTypeKind           => Box::new(Array::wrap(typ_ref)),
+        LLVMTypeKind::LLVMPointerTypeKind         => Box::new(Pointer::wrap(typ_ref)),
+        LLVMTypeKind::LLVMVectorTypeKind          => Box::new(Vector::wrap(typ_ref)),
+        LLVMTypeKind::LLVMMetadataTypeKind        => unimplemented!(),                      // TODO
+        LLVMTypeKind::LLVMX86_MMXTypeKind         => Box::new(X86MMX::wrap(typ_ref)),
+        LLVMTypeKind::LLVMTokenTypeKind           => Box::new(Token::wrap(typ_ref)),
+        LLVMTypeKind::LLVMScalableVectorTypeKind  => Box::new(ScalableVector::wrap(typ_ref)),
+        LLVMTypeKind::LLVMBFloatTypeKind          => Box::new(BFloat::wrap(typ_ref)),
+        LLVMTypeKind::LLVMX86_AMXTypeKind         => Box::new(X86AMX::wrap(typ_ref)),
+    }}
 }
 
 
-/// TODO Docs, Testing
+/// Generates boilerplate impls of Type for wrappers of LLVMTypeRef
 macro_rules! llvm_type {
     ($t:ident, $fn:path $(, $($argn:ident: $argv:path),*)?) => {
+        // TODO Account for possible assoc type, & expose it for the fn
         wrapper!($t, LLVMTypeRef);
         impl Type for $t {}
         impl $t {
@@ -79,12 +75,26 @@ macro_rules! llvm_type {
     };
 }
 
+/// Generates boilerplate for types with a single associated type
+macro_rules! llvm_type_with_assoc {
+    ($t:ident, $fn:path $(, $($argn:ident: $argv:path),*)?) => {
+        // TODO Account for possible assoc type, & expose it for the fn
+        wrapper!($t, LLVMTypeRef);
+        impl Type for $t {}
+        impl $t {
+            pub fn new<T: Wrapper<Llvm = LLVMTypeRef>>(assoc: T, $($($argn: $argv),*)?) -> Self {
+                unsafe { Self($fn(expose!(assoc)$(, $($argn),*)?)) }
+            }
+        }
+    };
+}
+
 // Token type
 wrapper!(Token, LLVMTypeRef);
 impl Type for Token {}
 
 // Pointers
-llvm_type!(Pointer, llvm::LLVMPointerType, typ: LLVMTypeRef, addr: u32);
+llvm_type_with_assoc!(Pointer, llvm::LLVMPointerType, addr: u32);
 llvm_type!(Void, llvm::LLVMVoidType);
 
 // Integer
@@ -105,33 +115,42 @@ llvm_type!(FP128, llvm::LLVMFP128Type);
 llvm_type!(PPCFP128, llvm::LLVMPPCFP128Type);
 
 // Collections
-llvm_type!(ScalableVector, llvm::LLVMScalableVectorType, elem_typ: LLVMTypeRef, size: u32);
-llvm_type!(Vector, llvm::LLVMVectorType, elem_typ: LLVMTypeRef, size: u32);
-llvm_type!(Array, llvm::LLVMArrayType, elem_typ: LLVMTypeRef, size: u32);
+llvm_type_with_assoc!(ScalableVector, llvm::LLVMScalableVectorType, size: u32);
+llvm_type_with_assoc!(Vector, llvm::LLVMVectorType, size: u32);
+llvm_type_with_assoc!(Array, llvm::LLVMArrayType, size: u32);
 
-// Special types
+// X86 types
 llvm_type!(X86FP80, llvm::LLVMX86FP80Type);
 llvm_type!(X86AMX, llvm::LLVMX86AMXType);
 llvm_type!(X86MMX, llvm::LLVMX86MMXType);
+
+
+// Type for protecting temporary data retrieved as reference.
+// Use sparingly.
+wrapper!(Raw, LLVMTypeRef);
+impl Type for Raw {}
+impl Raw {
+    /// Converts from Raw refrence to the correct named Type
+    pub fn to_type(self) -> Box<dyn Type> {
+        unsafe { type_from_ref(expose!(self)) }
+    }
+}
 
 // Function type
 wrapper!(Function, LLVMTypeRef);
 impl Type for Function {}
 impl Function {
-    pub fn new(ret_typ: LLVMTypeRef, param_types: &mut [LLVMTypeRef], is_var_arg: LLVMBool) -> Self {
+    pub fn new(ret_typ: Box<dyn Type>, param_types: Vec<Box<dyn Type>>, is_var_arg: bool) -> Self {
         unsafe {
-            Self(llvm::LLVMFunctionType(ret_typ, param_types.as_mut_ptr(), param_types.len() as u32, is_var_arg))
+            Self(llvm::LLVMFunctionType(
+                expose!(ret_typ),
+                expose_array!(param_types),
+                size!(param_types),
+                bool_to_llvm!(is_var_arg)
+            ))
         }
     }
 }
-
-// Raw type for protecting data retrieved from reference
-wrapper!(RawTypeRef, LLVMTypeRef);
-impl Type for RawTypeRef {}
-impl RawTypeRef {
-    // TODO Need a function that can recontextualize the type
-}
-
 
 
 
