@@ -1,12 +1,11 @@
 
-use std::ffi::CString;
-
 use libc::c_void;
 
 use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
+use super::types::Type;
 
 
 wrapper!(Context, LLVMContextRef);
@@ -49,13 +48,13 @@ impl Context {
     }
 
     // TODO Docs
-    pub fn set_discard_value_names(&self, discard: LLVMBool) {
-        unsafe { llvm::LLVMContextSetDiscardValueNames(self.0, discard) }
+    pub fn set_discard_value_names(&self, discard: bool) {
+        unsafe { llvm::LLVMContextSetDiscardValueNames(self.0, bool_to_llvm!(discard)) }
     }
 
     // TODO Docs
-    pub fn should_discard_value_names(&self) -> LLVMBool { // TODO Make safe
-        unsafe { llvm::LLVMContextShouldDiscardValueNames(self.0) }
+    pub fn should_discard_value_names(&self) -> bool { // TODO Make safe
+        bool_to_rust!( llvm::LLVMContextShouldDiscardValueNames(self.0) )
     }
 
     // TODO Docs
@@ -65,14 +64,14 @@ impl Context {
 
     // TODO Docs
     pub fn create_string_attribute(&self, k: &str, v: &str) -> LLVMAttributeRef {
-        let c_k = CString::new(k).expect("Convert &str to CString");
-        let c_v = CString::new(v).expect("Convert &str to CString");
-        unsafe { llvm::LLVMCreateStringAttribute(self.0, c_k.as_ptr(), k.len() as u32, c_v.as_ptr(), v.len() as u32) }
+        unsafe {
+            llvm::LLVMCreateStringAttribute(self.0, str_to_cstr!(k), size!(k), str_to_cstr!(v), size!(v))
+        }
     }
 
     // TODO Docs
-    pub fn create_type_attribute(&self, kind_id: u32, typ: LLVMTypeRef) -> LLVMAttributeRef {
-        unsafe { llvm::LLVMCreateTypeAttribute(self.0, kind_id, typ) }
+    pub fn create_type_attribute<T: Type>(&self, kind_id: u32, typ: T) -> LLVMAttributeRef {
+        unsafe { llvm::LLVMCreateTypeAttribute(self.0, kind_id, expose!(typ)) }
     }
 
     // TODO Docs
@@ -84,20 +83,17 @@ impl Context {
 
     // TODO Docs
     pub fn create_block(&self, name: &str) -> LLVMBasicBlockRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
-        unsafe { llvm::LLVMCreateBasicBlockInContext(self.0, c_name.as_ptr()) }
+        unsafe { llvm::LLVMCreateBasicBlockInContext(self.0, str_to_cstr!(name)) }
     }
 
     // TODO Docs
     pub fn append_block(&self, function: LLVMValueRef, name: &str) -> LLVMBasicBlockRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
-        unsafe { llvm::LLVMAppendBasicBlockInContext(self.0, function, c_name.as_ptr()) }
+        unsafe { llvm::LLVMAppendBasicBlockInContext(self.0, function, str_to_cstr!(name)) }
     }
 
     // TODO Docs
-    pub fn get_type_by_name(&self, name: &str) -> LLVMTypeRef {
-        let c_name = CString::new(name).expect("Convert &str to CString");
-        unsafe { llvm::LLVMGetTypeByName2(self.0, c_name.as_ptr()) }
+    pub fn get_type_by_name(&self, name: &str) -> Raw {
+        Raw::wrap(unsafe { llvm::LLVMGetTypeByName2(self.0, str_to_cstr!(name)) })
     }
 
 }
@@ -109,7 +105,7 @@ use super::types::*;
 macro_rules! type_in_context {
     ($op_name:ident, $fn:path, $ret_typ:ty $(, $($argn:ident: $argv:path),*)?) => {
         impl Context {
-            // TODO Link to LLVM documentation
+            #[doc = "TODO: Dynamically link to LLVM documentation"]
             pub fn $op_name(&self $(, $($argn: $argv),*)?) -> $ret_typ {
                 unsafe {
                     <$ret_typ>::wrap( $fn(self.0 $(, $($argn),*)?) )
@@ -153,13 +149,20 @@ impl Context {
 
     // TODO Docs
     pub fn create_metadata_string(&self, string: &str) -> LLVMMetadataRef {
-        let c_string = CString::new(string).expect("Convert &str to CString");
-        unsafe { llvm::LLVMMDStringInContext2(self.0, c_string.as_ptr(), string.len() ) }
+        unsafe { llvm::LLVMMDStringInContext2(self.0, str_to_cstr!(string), string.len() ) }
     }
 
     // TODO Docs
-    pub fn create_struct(&self, elements: &mut [LLVMTypeRef], is_packed: LLVMBool) -> LLVMTypeRef {
-        unsafe { llvm::LLVMStructTypeInContext(self.0, elements.as_mut_ptr(), elements.len() as u32, is_packed) }
+    pub fn create_struct(&self, elements: Vec<Box<dyn Type>>, is_packed: bool) -> LLVMTypeRef {
+        unsafe {
+            llvm::LLVMStructTypeInContext(
+                self.0,
+                expose_array!(elements),
+                size!(elements),
+                bool_to_llvm!(is_packed)
+            )
+        }
+        // TODO Wrap in Struct
     }
 
 }

@@ -78,7 +78,7 @@ impl Builder {
 macro_rules! op {
     ($op_name:ident, $fn:path $(, $($argn:ident: $argv:path),*)?) => {
         impl Builder {
-            /// TODO Dynamically-generated docs, maybe attribute macro?
+            #[doc = "TODO: Dynamically link to LLVM documentation"]
             pub fn $op_name(&mut self $(, $($argn: $argv),*)?) -> LLVMValueRef {
                 unsafe {
                     $fn(self.0 $(, $($argn),*)?)    // TODO Automatically convert args to LLVM types using macros?
@@ -93,7 +93,7 @@ macro_rules! op {
 macro_rules! op_with_name {
     ($op_name:ident, $fn:path, $($argn:ident: $argv:path),*) => {
         impl Builder {
-            /// TODO Docs
+            #[doc = "TODO: Dynamically link to LLVM documentation"]
             pub fn $op_name(&mut self, $($argn: $argv),*, name: &str) -> LLVMValueRef {
                 unsafe {
                     $fn(self.0, $($argn),*, str_to_cstr!(name))
