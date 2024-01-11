@@ -5,12 +5,15 @@ use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
-use super::types::Type;
-use super::{values as val, metadata as md};
+use crate::diagnostics as dx;
+use super::types::{Type, type_from_ref};
+use super::{builder as br, values as val, metadata as md, block as bb};
 
 
 wrapper!(Context, LLVMContextRef);
 
+// TODO WARNING DEBUG REVISIT THESE--- MAY NOT WANT TO DROP WITH WRAPPER?
+// NEW WRAPPERS SOMETIMES ARE CREATED FOR A NEW REF, AND YOU WOULDN'T WANT TO DROP IT WHEN THEY DO
 impl Drop for Context {
     fn drop(&mut self) {unsafe { llvm::LLVMContextDispose(self.0) }}
 }
@@ -27,21 +30,21 @@ impl Context {
     }
 
     // TODO Docs
-    pub fn get_diagnostic_context(&self) -> *mut c_void { // TODO Make safe
-        unsafe { llvm::LLVMContextGetDiagnosticContext(self.0) }
+    pub fn get_diagnostic_context(&self) -> dx::DiagnosticContext {
+        dx::DiagnosticContext::wrap(unsafe { llvm::LLVMContextGetDiagnosticContext(self.0) })
     }
 
     // TODO Docs
-    pub fn get_diagnostic_handler(&self) -> LLVMDiagnosticHandler {
-        unsafe { llvm::LLVMContextGetDiagnosticHandler(self.0) }
+    pub fn get_diagnostic_handler(&self) -> dx::DiagnosticHandler {
+        dx::DiagnosticHandler::wrap(unsafe { llvm::LLVMContextGetDiagnosticHandler(self.0) })
     }
 
     // TODO Docs
-    pub fn set_diagnostic_handler(&self, handler: LLVMDiagnosticHandler, diag_context: *mut c_void) { // TODO Make safe
-        unsafe { llvm::LLVMContextSetDiagnosticHandler(self.0, handler, diag_context) }
+    pub fn set_diagnostic_handler(&self, handler: dx::DiagnosticHandler, diag_context: dx::DiagnosticContext) {
+        unsafe { llvm::LLVMContextSetDiagnosticHandler(self.0, expose!(handler), expose!(diag_context)) }
     }
 
-    // TODO Docs
+    // TODO Docs, What does this do?
     pub fn set_yield_callback(&self, callback: LLVMYieldCallback, opaque_handler: *mut c_void) { // TODO Make safe
         unsafe { llvm::LLVMContextSetYieldCallback(self.0, callback, opaque_handler) }
     }
@@ -57,37 +60,39 @@ impl Context {
     }
 
     // TODO Docs
-    pub fn create_enum_attribute(&self, kind_id: u32, val: u64) -> LLVMAttributeRef {
-        unsafe { llvm::LLVMCreateEnumAttribute(self.0, kind_id, val) }
+    pub fn create_enum_attribute(&self, kind_id: u32, val: u64) -> md::Attribute {
+        md::Attribute::wrap(unsafe { llvm::LLVMCreateEnumAttribute(self.0, kind_id, val) })
     }
 
     // TODO Docs
-    pub fn create_string_attribute(&self, k: &str, v: &str) -> LLVMAttributeRef {
-        unsafe {
+    pub fn create_string_attribute(&self, k: &str, v: &str) -> md::Attribute {
+        md::Attribute::wrap(unsafe {
             llvm::LLVMCreateStringAttribute(self.0, str_to_cstr!(k), size!(k), str_to_cstr!(v), size!(v))
-        }
+        })
     }
 
     // TODO Docs
-    pub fn create_type_attribute<T: Type>(&self, kind_id: u32, typ: T) -> LLVMAttributeRef {
-        unsafe { llvm::LLVMCreateTypeAttribute(self.0, kind_id, expose!(typ)) }
+    pub fn create_type_attribute<T: Type>(&self, kind_id: u32, typ: T) -> md::Attribute {
+        md::Attribute::wrap(unsafe { llvm::LLVMCreateTypeAttribute(self.0, kind_id, expose!(typ)) })
     }
 
     // TODO Docs
-    pub fn create_builder(&self) -> super::builder::Builder {
-        super::builder::Builder::wrap(
+    pub fn create_builder(&self) -> br::Builder {
+        br::Builder::wrap(
             unsafe { llvm::LLVMCreateBuilderInContext(self.0) }
         )
     }
 
     // TODO Docs
-    pub fn create_block(&self, name: &str) -> LLVMBasicBlockRef {
-        unsafe { llvm::LLVMCreateBasicBlockInContext(self.0, str_to_cstr!(name)) }
+    pub fn create_block(&self, name: &str) -> bb::Block {
+        let b = unsafe { llvm::LLVMCreateBasicBlockInContext(self.0, str_to_cstr!(name)) };
+        bb::Block::wrap(b)
     }
 
     // TODO Docs
-    pub fn append_block(&self, function: val::Function, name: &str) -> LLVMBasicBlockRef {
-        unsafe { llvm::LLVMAppendBasicBlockInContext(self.0, expose!(function), str_to_cstr!(name)) }
+    pub fn append_block(&self, function: val::Function, name: &str) -> bb::Block {
+        let b = unsafe { llvm::LLVMAppendBasicBlockInContext(self.0, expose!(function), str_to_cstr!(name)) };
+        bb::Block::wrap(b)
     }
 
     // TODO Docs
@@ -95,6 +100,13 @@ impl Context {
         Raw::wrap(unsafe { llvm::LLVMGetTypeByName2(self.0, str_to_cstr!(name)) })
     }
 
+    // TODO Docs
+    pub fn get_intrinsic_type(&self, id: u32, params: Vec<Box<dyn Type>>) -> Box<dyn Type> {
+        let intrinsic = unsafe {
+            llvm::LLVMIntrinsicGetType(self.0, id, expose_array!(params), params.len())
+        };
+        type_from_ref(intrinsic)
+    }
 }
 
 
