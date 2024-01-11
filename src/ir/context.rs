@@ -6,14 +6,13 @@ use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
 use super::types::Type;
+use super::{values as val, metadata as md};
 
 
 wrapper!(Context, LLVMContextRef);
 
 impl Drop for Context {
-    fn drop(&mut self) {
-        unsafe { llvm::LLVMContextDispose(self.0) }
-    }
+    fn drop(&mut self) {unsafe { llvm::LLVMContextDispose(self.0) }}
 }
 
 impl Context {
@@ -87,8 +86,8 @@ impl Context {
     }
 
     // TODO Docs
-    pub fn append_block(&self, function: LLVMValueRef, name: &str) -> LLVMBasicBlockRef {
-        unsafe { llvm::LLVMAppendBasicBlockInContext(self.0, function, str_to_cstr!(name)) }
+    pub fn append_block(&self, function: val::Function, name: &str) -> LLVMBasicBlockRef {
+        unsafe { llvm::LLVMAppendBasicBlockInContext(self.0, expose!(function), str_to_cstr!(name)) }
     }
 
     // TODO Docs
@@ -142,29 +141,45 @@ impl Context {
         Token::wrap(unsafe { llvm::LLVMTokenTypeInContext(self.0) })
     }
 
-    // TODO Docs
-    pub fn create_metadata_node(&self, metadata: &mut [LLVMMetadataRef]) -> LLVMMetadataRef {
-        unsafe { llvm::LLVMMDNodeInContext2(self.0, metadata.as_mut_ptr(), metadata.len() ) }
+    //  TODO Docs -- LLVMMetadataTypeInContext
+    pub fn create_metadata(&self) -> md::MetadataType {
+        md::MetadataType::wrap(unsafe { llvm::LLVMMetadataTypeInContext(self.0) })
     }
 
     // TODO Docs
-    pub fn create_metadata_string(&self, string: &str) -> LLVMMetadataRef {
-        unsafe { llvm::LLVMMDStringInContext2(self.0, str_to_cstr!(string), string.len() ) }
+    pub fn create_metadata_node(&self, metadata: Vec<md::ActualMetadata>) -> md::ActualMetadata {
+        let meta = unsafe { llvm::LLVMMDNodeInContext2(self.0, expose_array!(metadata), metadata.len() ) };
+        md::ActualMetadata::wrap(meta)
     }
 
     // TODO Docs
-    pub fn create_struct(&self, elements: Vec<Box<dyn Type>>, is_packed: bool) -> LLVMTypeRef {
-        unsafe {
+    pub fn create_metadata_string(&self, string: &str) -> md::ActualMetadata {
+        let meta = unsafe { llvm::LLVMMDStringInContext2(self.0, str_to_cstr!(string), string.len() ) };
+        md::ActualMetadata::wrap(meta)
+    }
+
+    // TODO Docs
+    pub fn create_struct(&self, elements: Vec<Box<dyn Type>>, is_packed: bool) -> Struct {
+        let structo = unsafe {
             llvm::LLVMStructTypeInContext(
                 self.0,
                 expose_array!(elements),
                 size!(elements),
                 bool_to_llvm!(is_packed)
             )
-        }
-        // TODO Wrap in Struct
+        };
+        Struct::wrap(structo)
     }
 
+    // TODO REVISIT THIS    LLVMStructCreateNamed
+    pub fn create_struct_named(&self, name: &str) -> Struct {
+        Struct::wrap(unsafe { llvm::LLVMStructCreateNamed(self.0, str_to_cstr!(name)) })
+    }
+
+    // TODO REVISIT THIS
+    pub fn metadata_as_value(&self, metadata: md::ActualMetadata) -> md::MetadataAsValue {
+        md::MetadataAsValue::wrap(unsafe { llvm::LLVMMetadataAsValue(self.0, expose!(metadata)) })
+    }
 }
 
 
