@@ -161,11 +161,10 @@ impl Function {
             bool_to_llvm!(is_var_arg)
         ))}
     }
-    /*
-    LLVMDeleteFunction⚠
-    LLVMCountParamTypes⚠
-    LLVMCountParams⚠
-    */
+
+    pub fn num_params(&self) -> u32 {
+        unsafe { llvm::LLVMCountParamTypes(self.0) }
+    }
 }
 
 wrapper!(Struct, LLVMTypeRef);
