@@ -7,7 +7,7 @@ use llvm_sys::core as llvm;
 use crate::wrapper::Wrapper;
 use crate::diagnostics as dx;
 use super::types::{Type, type_from_ref};
-use super::{builder as br, values as val, metadata as md, block as bb};
+use super::{builder as br, values as val, metadata as md, block as bb, module as ml};
 
 
 wrapper!(Context, LLVMContextRef);
@@ -188,10 +188,16 @@ impl Context {
         Struct::wrap(unsafe { llvm::LLVMStructCreateNamed(self.0, str_to_cstr!(name)) })
     }
 
-    // TODO REVISIT THIS
+    // TODO REVISIT THIS, Move to metadata
     pub fn metadata_as_value(&self, metadata: md::ActualMetadata) -> md::MetadataAsValue {
         md::MetadataAsValue::wrap(unsafe { llvm::LLVMMetadataAsValue(self.0, expose!(metadata)) })
     }
+
+   // TODO Docs, LLVMModuleCreateWithNameInContext⚠ // context
+    pub fn create_module(&self, name: &str) -> ml::Module {
+        unsafe { ml::Module::wrap(llvm::LLVMModuleCreateWithNameInContext(str_to_cstr!(name), self.0)) }
+    }
+
 }
 
 

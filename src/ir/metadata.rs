@@ -14,6 +14,10 @@ impl super::types::Type for MetadataType {}
 // Metadata as value
 pub use super::values::MetadataAsValue;
 
+wrapper!(MetadataNode, LLVMNamedMDNodeRef);
 
 // Attribute
 wrapper!(Attribute, LLVMAttributeRef);
+
+
+//    LLVMGetNamedMetadataName⚠  // md
