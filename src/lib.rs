@@ -12,6 +12,7 @@ pub mod convert;
 pub mod wrapper;
 
 pub mod error;
+pub mod diagnostics;
 
 pub mod ir;
 

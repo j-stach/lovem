@@ -4,7 +4,7 @@ pub mod context;
 pub mod types;
 pub mod values;
 pub mod module;
-pub mod basic_block;
+pub mod block;
 pub mod memory_buffer;
 pub mod intrinsics;
 pub mod metadata;

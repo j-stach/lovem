@@ -4,7 +4,7 @@ use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
 
-use super::{types::*, values::*};
+use super::{types as typ, values as val, metadata as md, block as bb};
 
 /*
     !! WARNING !!
@@ -29,28 +29,28 @@ impl Builder {
     }
 
     /// TODO Docs
-    pub fn insert(&self, instruction: LLVMValueRef) {
-        unsafe { llvm::LLVMInsertIntoBuilder(self.0, instruction) }
+    pub fn insert(&self, instruction: val::Instruction) {
+        unsafe { llvm::LLVMInsertIntoBuilder(self.0, expose!(instruction)) }
     }
 
     /// TODO Docs
-    pub fn insert_with_name(&self, instruction: LLVMValueRef, name: &str) {
-        unsafe { llvm::LLVMInsertIntoBuilderWithName(self.0, instruction, str_to_cstr!(name)) }
+    pub fn insert_with_name(&self, instruction: val::Instruction, name: &str) {
+        unsafe { llvm::LLVMInsertIntoBuilderWithName(self.0, expose!(instruction), str_to_cstr!(name)) }
     }
 
     /// TODO Docs
-    pub fn position(&self, block: LLVMBasicBlockRef, instruction: LLVMValueRef) {
-        unsafe { llvm::LLVMPositionBuilder(self.0, block, instruction) }
+    pub fn position(&self, block: bb::Block, instruction: val::Instruction) {
+        unsafe { llvm::LLVMPositionBuilder(self.0, expose!(block), expose!(instruction)) }
     }
 
     /// TODO Docs
-    pub fn position_at_end(&self, block: LLVMBasicBlockRef) {
-        unsafe { llvm::LLVMPositionBuilderAtEnd(self.0, block) }
+    pub fn position_at_end(&self, block: bb::Block) {
+        unsafe { llvm::LLVMPositionBuilderAtEnd(self.0, expose!(block)) }
     }
 
     /// TODO Docs
-    pub fn position_before(&self, instruction: LLVMValueRef) {
-        unsafe { llvm::LLVMPositionBuilderBefore(self.0, instruction) }
+    pub fn position_before(&self, instruction: val::Instruction) {
+        unsafe { llvm::LLVMPositionBuilderBefore(self.0, expose!(instruction)) }
     }
 
     /// TODO Docs
@@ -59,13 +59,13 @@ impl Builder {
     }
 
     /// TODO Docs
-    pub fn get_default_fp_math_tag(&self) -> LLVMMetadataRef {
-        unsafe { llvm::LLVMBuilderGetDefaultFPMathTag(self.0) }
+    pub fn get_default_fp_math_tag(&self) -> md::ActualMetadata {
+        md::ActualMetadata::wrap(unsafe { llvm::LLVMBuilderGetDefaultFPMathTag(self.0) })
     }
 
     /// TODO Docs
-    pub fn set_default_fp_math_tag(&self, fp_math_tag: LLVMMetadataRef) {
-        unsafe { llvm::LLVMBuilderSetDefaultFPMathTag(self.0, fp_math_tag) }
+    pub fn set_default_fp_math_tag(&self, fp_math_tag: md::ActualMetadata) {
+        unsafe { llvm::LLVMBuilderSetDefaultFPMathTag(self.0, expose!(fp_math_tag)) }
     }
 }
 
@@ -135,13 +135,19 @@ op!(build_atomic_rmw, llvm::LLVMBuildAtomicRMW,
 // Global strings
 impl Builder {
     // TODO Docs
-    pub fn build_global_string(&self, string: &str, name: &str) -> LLVMValueRef {
-        unsafe { llvm::LLVMBuildGlobalString(self.0, str_to_cstr!(string), str_to_cstr!(name)) }
+    pub fn build_global_string(&self, string: &str, name: &str) -> val::GlobalVariable {
+        let g_string = unsafe {
+            llvm::LLVMBuildGlobalString(self.0, str_to_cstr!(string), str_to_cstr!(name))
+        };
+        val::GlobalVariable::wrap(g_string) // TODO Doublecheck this
     }
 
     // TODO Docs
-    pub fn build_global_string_ptr(&self, string: &str, name: &str) -> LLVMValueRef {
-        unsafe { llvm::LLVMBuildGlobalStringPtr(self.0, str_to_cstr!(string), str_to_cstr!(name)) }
+    pub fn build_global_string_ptr(&self, string: &str, name: &str) -> val::GlobalVariable {
+        let g_string = unsafe {
+            llvm::LLVMBuildGlobalStringPtr(self.0, str_to_cstr!(string), str_to_cstr!(name))
+        };
+        val::GlobalVariable::wrap(g_string) // TODO Doublecheck this
     }
 }
 
@@ -155,7 +161,7 @@ op_with_name!(build_freeze, llvm::LLVMBuildFreeze, val: LLVMValueRef);
 // Memory resizing instructions
 op_with_name!(build_trunc, llvm::LLVMBuildTrunc, val: LLVMValueRef, dest_typ: LLVMTypeRef);
 op_with_name!(build_zext, llvm::LLVMBuildZExt, val: LLVMValueRef, dest_typ: LLVMTypeRef);
-op_with_name!(build_sext /*teehee*/, llvm::LLVMBuildSExt, val: LLVMValueRef, dest_typ: LLVMTypeRef);
+op_with_name!(build_sext, llvm::LLVMBuildSExt, val: LLVMValueRef, dest_typ: LLVMTypeRef);
 op_with_name!(build_fp_trunc, llvm::LLVMBuildFPTrunc, val: LLVMValueRef, dest_typ: LLVMTypeRef);
 op_with_name!(build_fp_ext, llvm::LLVMBuildFPExt, val: LLVMValueRef, dest_typ: LLVMTypeRef);
 
@@ -203,30 +209,30 @@ op_with_name!(build_insert_value, llvm::LLVMBuildInsertValue, agg: LLVMValueRef,
 // Referencing elements (Get Element Pointer)
 impl Builder {
     // TODO Docs, macro?
-    pub fn build_gep(&self, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_gep(&self, ptr: LLVMValueRef, slice: Vec<Box<dyn val::Value>>, name: &str) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildGEP(self.0, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
+            llvm::LLVMBuildGEP(self.0, ptr, expose_array!(slice), size!(slice), str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
-    pub fn build_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, slice: Vec<Box<dyn val::Value>>, name: &str) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildGEP2(self.0, typ, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
+            llvm::LLVMBuildGEP2(self.0, typ, ptr, expose_array!(slice), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
-    pub fn build_in_bounds_gep(&self, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_in_bounds_gep(&self, ptr: LLVMValueRef, slice: Vec<Box<dyn val::Value>>, name: &str) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildInBoundsGEP(self.0, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
+            llvm::LLVMBuildInBoundsGEP(self.0, ptr, expose_array!(slice), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
-    pub fn build_in_bounds_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, slice: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_in_bounds_gep_2(&self, typ: LLVMTypeRef, ptr: LLVMValueRef, slice: Vec<Box<dyn val::Value>>, name: &str) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildInBoundsGEP2(self.0, typ, ptr, slice.as_mut_ptr(), slice.len() as u32, str_to_cstr!(name))
+            llvm::LLVMBuildInBoundsGEP2(self.0, typ, ptr, expose_array!(slice), slice.len() as u32, str_to_cstr!(name))
         }
     }
 
@@ -303,16 +309,27 @@ op!(build_unreachable, llvm::LLVMBuildUnreachable);
 // Functions
 impl Builder {
     // TODO Docs, macro?
-    pub fn build_call(&self, function: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_call(
+        &self,
+        function: val::Function,
+        args: Vec<val::Argument>,
+        name: &str
+    ) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildCall(self.0, function, args.as_mut_ptr(), args.len() as u32, str_to_cstr!(name))
+            llvm::LLVMBuildCall(self.0, expose!(function), expose_array!(args), size!(args), str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
-    pub fn build_call_2(&self, typ: LLVMTypeRef, function: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_call_2(
+        &self,
+        typ: LLVMTypeRef,
+        function: val::Function,
+        args: Vec<val::Argument>,
+        name: &str
+    ) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildCall2(self.0, typ, function, args.as_mut_ptr(), args.len() as u32, str_to_cstr!(name))
+            llvm::LLVMBuildCall2(self.0, typ, expose!(function), expose_array!(args), size!(args), str_to_cstr!(name))
         }
     }
 }
@@ -384,14 +401,14 @@ impl Builder {
     }
 
     // TODO Docs, macro?
-    pub fn build_catch_pad(&self, pad: LLVMValueRef, args: &mut [LLVMValueRef], name: &str) -> LLVMValueRef {
+    pub fn build_catch_pad(&self, pad: LLVMValueRef, args: Vec<Box<dyn val::Value>>, name: &str) -> LLVMValueRef {
         unsafe {
-            llvm::LLVMBuildCatchPad(self.0, pad, args.as_mut_ptr(), size!(args), str_to_cstr!(name))
+            llvm::LLVMBuildCatchPad(self.0, pad, expose_array!(args), size!(args), str_to_cstr!(name))
         }
     }
 
     // TODO Docs, macro?
-    pub fn build_cleanup_pad(&self, pad: LLVMValueRef, args: Vec<Box<dyn Value>>, name: &str) -> LLVMValueRef {
+    pub fn build_cleanup_pad(&self, pad: LLVMValueRef, args: Vec<Box<dyn val::Value>>, name: &str) -> LLVMValueRef {
         unsafe {
             llvm::LLVMBuildCleanupPad(self.0, pad, expose_array!(args), size!(args), str_to_cstr!(name))
         }

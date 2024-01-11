@@ -5,6 +5,9 @@ use llvm_sys::core as llvm;
 use crate::wrapper::Wrapper;
 
 use super::types::{Type, type_from_ref};
+use super::metadata as md;
+
+use super::block as bb;
 
 
 pub trait Value: Wrapper<Llvm = LLVMValueRef> {
@@ -15,13 +18,13 @@ pub trait Value: Wrapper<Llvm = LLVMValueRef> {
     }
 
     // TODO Docs
-    fn as_basic_block(&self) -> LLVMBasicBlockRef {
-        unsafe { llvm::LLVMValueAsBasicBlock(expose!(self)) }
+    fn as_basic_block(&self) -> bb::Block {
+        bb::Block::wrap(unsafe { llvm::LLVMValueAsBasicBlock(expose!(self)) })
     }
 
     // TODO Docs
-    fn as_metadata(&self) -> LLVMMetadataRef {
-        unsafe { llvm::LLVMValueAsMetadata(expose!(self)) }
+    fn as_metadata(&self) -> md::ActualMetadata {
+        md::ActualMetadata::wrap(unsafe { llvm::LLVMValueAsMetadata(expose!(self)) })
     }
 
     // TODO Docs
@@ -124,7 +127,7 @@ llvm_value!(Poison);
 
 /// Wraps a naked LLVMValueRef with the corresponding safe type & stores it on the heap
 pub fn value_from_ref(val_ref: LLVMValueRef) -> Box<dyn Value> {
-    unsafe {match llvm::LLVMGetValueKind(val_ref) {
+    unsafe { match llvm::LLVMGetValueKind(val_ref) {
         LLVMValueKind::LLVMArgumentValueKind               => Box::new(Argument(val_ref)),
         LLVMValueKind::LLVMBasicBlockValueKind             => Box::new(BasicBlock(val_ref)),
         LLVMValueKind::LLVMMemoryUseValueKind              => Box::new(MemoryUse(val_ref)),
@@ -187,7 +190,19 @@ pub fn ref_to_value<V: Wrapper<Llvm = LLVMValueRef>>(val_ref: LLVMValueRef) -> V
 
 // functions
 /*
+    LLVMDeleteFunction⚠
+    LLVMCountParams⚠
     LLVMEraseGlobalIFunc⚠
+    LLVMGetBasicBlocks⚠ // function
+
+*/
+
+
+
+
+
+/*
+    LLVMBlockAddress⚠ // value
 */
 
 

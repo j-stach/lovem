@@ -1,5 +1,4 @@
 
-use std::ffi::CString;
 use llvm_sys::{error as err, error_handling as eh};
 
 use super::wrapper::Wrapper;
@@ -13,7 +12,9 @@ pub const SUCCESS: libc::c_int = err::LLVMErrorSuccess; // Just zero with extra 
 
 
 wrapper!(Error, err::LLVMErrorRef);
+wrapper!(ErrorType, err::LLVMErrorTypeId);
 
+// TODO Revaluate, may be a bug
 impl Drop for Error {
     fn drop(&mut self) {
         unsafe { err::LLVMConsumeError(self.0) }
@@ -22,20 +23,18 @@ impl Drop for Error {
 
 impl Error {
     // TODO Docs
-    pub fn consume_error(self) {
+    pub fn consume(self) {
         unsafe { err::LLVMConsumeError(self.0) };
         drop(self)
     }
 
     // TODO Docs
     pub fn create_string_error(message: &str) -> Self {
-        let c_msg = CString::new(message).expect("Convert &str to CString");
-        let str_err = unsafe { err::LLVMCreateStringError(c_msg.as_ptr()) };
-        Self(str_err)
+        Self(unsafe { err::LLVMCreateStringError(str_to_cstr!(message)) })
     }
 
     // TODO Docs: Removes msg from error
-    pub fn dispose_error_message(&mut self) {
+    pub fn dispose_message(&mut self) {
         unsafe {
             let msg = err::LLVMGetErrorMessage(self.0);
             err::LLVMDisposeErrorMessage(msg)
@@ -43,25 +42,19 @@ impl Error {
     }
 
     // TODO Docs
-    pub fn get_error_message(&mut self) -> &str {
-        let msg = unsafe { err::LLVMGetErrorMessage(self.0) };
-        cstr_to_str!(msg)
+    pub fn message(&mut self) -> &str {
+        cstr_to_str!(err::LLVMGetErrorMessage(self.0))
     }
 
     // TODO Docs, plus, does this need a Rusty return type?
-    pub fn get_error_type_id(&self) -> err::LLVMErrorTypeId {
-        unsafe { err::LLVMGetErrorTypeId(self.0) }
+    pub fn type_id(&self) -> ErrorType {
+        ErrorType::wrap(unsafe { err::LLVMGetErrorTypeId(self.0) })
     }
 
     // TODO Why is this useful exactly?
-    pub fn get_string_error_type_id() -> err::LLVMErrorTypeId {
-        unsafe { err::LLVMGetStringErrorTypeId() }
+    pub fn get_string_error_type_id() -> ErrorType {
+        ErrorType::wrap(unsafe { err::LLVMGetStringErrorTypeId() })
     }
-
-
-    // TODO May need to add the unsafe versions of get message back, in case there are
-    // other situations where I'd need to dispose of a message
-
 }
 
 ///! Note:
@@ -78,13 +71,13 @@ impl FatalErrorHandler {
     }
 
     // TODO Docs
-    pub fn install_fatal_error_handler(self) {
+    pub fn install(self) {
         unsafe { eh::LLVMInstallFatalErrorHandler(self.0) }
         drop(self)
     }
 
     // TODO Docs
-    pub fn reset_fatal_error_handler() {
+    pub fn reset() {
         unsafe { eh::LLVMResetFatalErrorHandler() }
     }
 }
