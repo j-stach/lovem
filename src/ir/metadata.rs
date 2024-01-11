@@ -1,20 +1,16 @@
-/*
-    LLVMGlobalClearMetadata⚠
-    LLVMGlobalCopyAllMetadata⚠
-    LLVMGlobalEraseMetadata⚠
-    LLVMGlobalGetValueType⚠
-    LLVMGlobalSetMetadata⚠
 
-    LLVMMetadataAsValue⚠
-    LLVMMetadataTypeInContext⚠
+use llvm_sys::prelude::*;
 
-    LLVMHasMetadata⚠
-    LLVMGetNamedMetadata⚠
-    LLVMGetNamedMetadataName⚠
-    LLVMGetNamedMetadataNumOperands⚠
-    LLVMGetNamedMetadataOperands⚠
+use crate::wrapper::Wrapper;
 
-    LLVMValueMetadataEntriesGetKind⚠
-    LLVMValueMetadataEntriesGetMetadata⚠
-    LLVMDisposeValueMetadataEntries⚠
-*/
+// Wrapper for actual ref to metadata
+wrapper!(ActualMetadata, LLVMMetadataRef);
+
+
+// Metadata as type
+wrapper!(MetadataType, LLVMTypeRef);
+impl super::types::Type for MetadataType {}
+
+
+// Metadata as value
+pub use super::values::MetadataAsValue;

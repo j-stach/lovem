@@ -32,4 +32,21 @@
     LLVMAddModuleFlag⚠
     LLVMAddNamedMetadataOperand⚠
 
+/*
+    LLVMGetNamedMetadata⚠
+    LLVMGetNamedMetadataName⚠
+    LLVMGetNamedMetadataNumOperands⚠
+    LLVMGetNamedMetadataOperands⚠
+
+
+    LLVMCreateFunctionPassManager⚠
+    LLVMCreateFunctionPassManagerForModule⚠
+    LLVMCreatePassManager⚠
+    LLVMDisposePassManager⚠
+    LLVMFinalizeFunctionPassManager⚠
+    LLVMInitializeFunctionPassManager⚠
+    LLVMRunFunctionPassManager⚠
+    LLVMRunPassManager⚠
+*/
+
 */

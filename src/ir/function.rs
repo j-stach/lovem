@@ -1,7 +1,0 @@
-
-/*
-    LLVMDeleteFunction⚠
-    LLVMCountParamTypes⚠
-    LLVMCountParams⚠
-    LLVMEraseGlobalIFunc⚠
-*/

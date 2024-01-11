@@ -1,10 +1,10 @@
 
-use std::ffi::CString;
-
 use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
+
+use super::{types::*, values::*};
 
 /*
     !! WARNING !!
@@ -391,7 +391,7 @@ impl Builder {
     }
 
     // TODO Docs, macro?
-    pub fn build_cleanup_pad(&self, pad: LLVMValueRef, args: Vec<super::value::Value>, name: &str) -> LLVMValueRef {
+    pub fn build_cleanup_pad(&self, pad: LLVMValueRef, args: Vec<Box<dyn Value>>, name: &str) -> LLVMValueRef {
         unsafe {
             llvm::LLVMBuildCleanupPad(self.0, pad, expose_array!(args), size!(args), str_to_cstr!(name))
         }

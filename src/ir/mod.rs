@@ -1,17 +1,13 @@
 
 pub mod builder;
 pub mod context;
-pub mod pass_manager;
 pub mod types;
-pub mod consts;
-pub mod structs;
-pub mod value;
-pub mod metadata;
+pub mod values;
 pub mod module;
-pub mod function;
 pub mod basic_block;
 pub mod memory_buffer;
-pub mod intrinsic;
+pub mod intrinsics;
+pub mod metadata;
 
 
 
