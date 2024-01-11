@@ -8,3 +8,6 @@ use super::wrapper::Wrapper;
 // Diagnostics
 wrapper!(DiagnosticHandler, LLVMDiagnosticHandler);
 wrapper!(Diagnostics, LLVMDiagnosticInfoRef);
+
+type LLVMDiagnosticContext = *mut std::os::raw::c_void; // TODO Refactor to "LlvmOpaque"
+wrapper!(DiagnosticContext, LLVMDiagnosticContext);
