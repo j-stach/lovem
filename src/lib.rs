@@ -4,6 +4,8 @@ extern crate llvm_sys;
 
 extern crate anyhow; // TODO Transition to thiserror
 
+extern crate paste;
+
 
 #[macro_use]
 pub mod convert;

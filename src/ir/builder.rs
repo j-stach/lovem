@@ -2,7 +2,7 @@
 use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
-use crate::wrapper::Wrapper;
+use crate::wrapper::{Wrapper, NonWrapper};
 
 use super::{types as typ, values as val, metadata as md, block as bb};
 
@@ -103,9 +103,38 @@ macro_rules! op_with_name {
     }
 }
 
+macro_rules! build_op {
+    ($op_name:ident, $fn:path, $ret_val:ty $(, $($arg_name:ident : $arg_typ:ty),*)?) => {
+        impl Builder {
+            #[doc = "TODO: Dynamically link to LLVM documentation using croc"]
+            pub fn $op_name(&self $(, $($arg_name: $arg_typ),*)?) -> $ret_val {
+                unsafe {
+                    let value = $fn(self.0 $(, $(expose!($arg_name)),*)?);
+                    val::value_from_ref(value)
+                }
+            }
+        }
+    };
+    ($op_name:ident, $fn:path, $ret_val:ty $(, $($arg_name:ident : $arg_typ:ty)*)?, named) => {
+        impl Builder {
+            #[doc = "TODO: Dynamically link to LLVM documentation using croc"]
+            pub fn $op_name(&self $(, $($arg_name: $arg_typ)*)?, name: &str) -> $ret_val {
+                unsafe {
+                    let value = $fn(self.0 $(, $(expose!($arg_name))*)?, str_to_cstr!(name));
+                    val::value_from_ref(value)
+                }
+            }
+        }
+    }
+}
+
+
+build_op!(build_malloc, llvm::LLVMBuildMalloc, Box<dyn val::Value>, typ: Box<dyn typ::Type>, named);
+build_op!(build_alloca, llvm::LLVMBuildAlloca, Box<dyn val::Value>, typ: Box<dyn typ::Type>, named);
+
 // Memory allocation
-op_with_name!(build_malloc, llvm::LLVMBuildMalloc, typ: LLVMTypeRef);
-op_with_name!(build_alloca, llvm::LLVMBuildAlloca, typ: LLVMTypeRef);
+//op_with_name!(build_malloc, llvm::LLVMBuildMalloc, typ: LLVMTypeRef);
+//op_with_name!(build_alloca, llvm::LLVMBuildAlloca, typ: LLVMTypeRef);
 op_with_name!(build_array_malloc, llvm::LLVMBuildArrayMalloc, typ: LLVMTypeRef, val: LLVMValueRef);
 op_with_name!(build_array_alloca, llvm::LLVMBuildArrayAlloca, typ: LLVMTypeRef, val: LLVMValueRef);
 
@@ -205,6 +234,8 @@ op_with_name!(build_shuffle_vector, llvm::LLVMBuildShuffleVector, v1: LLVMValueR
 // Working with aggregates
 op_with_name!(build_extract_value, llvm::LLVMBuildExtractValue, agg: LLVMValueRef, index: u32);
 op_with_name!(build_insert_value, llvm::LLVMBuildInsertValue, agg: LLVMValueRef, val: LLVMValueRef, index: u32);
+
+
 
 // Referencing elements (Get Element Pointer)
 impl Builder {
