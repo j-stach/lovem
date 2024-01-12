@@ -5,6 +5,7 @@ use llvm_sys::core as llvm;
 use crate::wrapper::{Wrapper, NonWrapper};
 
 use super::{types as typ, values as val, metadata as md, block as bb};
+use self::{typ::Type, val::Value};
 
 /*
     !! WARNING !!
@@ -103,25 +104,31 @@ macro_rules! op_with_name {
     }
 }
 
+
+
+
+
+
+
 macro_rules! build_op {
-    ($op_name:ident, $fn:path, $ret_val:ty $(, $($arg_name:ident : $arg_typ:ty),*)?) => {
+    ($op_name:ident, $fn:path $(, $($arg_name:ident : $arg_typ:path),*)?) => {
         impl Builder {
             #[doc = "TODO: Dynamically link to LLVM documentation using croc"]
-            pub fn $op_name(&self $(, $($arg_name: $arg_typ),*)?) -> $ret_val {
+            pub fn $op_name(&self $(, $($arg_name: $arg_typ),*)?) -> val::Instruction {
                 unsafe {
                     let value = $fn(self.0 $(, $(expose!($arg_name)),*)?);
-                    val::value_from_ref(value)
+                    val::ref_to_value(value)
                 }
             }
         }
     };
-    ($op_name:ident, $fn:path, $ret_val:ty $(, $($arg_name:ident : $arg_typ:ty)*)?, named) => {
+    (named, $op_name:ident, $fn:path $(, $($arg_name:ident : $arg_typ:ty),*)?) => {
         impl Builder {
             #[doc = "TODO: Dynamically link to LLVM documentation using croc"]
-            pub fn $op_name(&self $(, $($arg_name: $arg_typ)*)?, name: &str) -> $ret_val {
+            pub fn $op_name(&self $(, $($arg_name: $arg_typ),*)?, name: &str) -> val::Instruction {
                 unsafe {
-                    let value = $fn(self.0 $(, $(expose!($arg_name))*)?, str_to_cstr!(name));
-                    val::value_from_ref(value)
+                    let value = $fn(self.0 $(, $(expose!($arg_name)),*)?, str_to_cstr!(name));
+                    val::ref_to_value(value)
                 }
             }
         }
@@ -129,21 +136,19 @@ macro_rules! build_op {
 }
 
 
-build_op!(build_malloc, llvm::LLVMBuildMalloc, Box<dyn val::Value>, typ: Box<dyn typ::Type>, named);
-build_op!(build_alloca, llvm::LLVMBuildAlloca, Box<dyn val::Value>, typ: Box<dyn typ::Type>, named);
-
 // Memory allocation
-//op_with_name!(build_malloc, llvm::LLVMBuildMalloc, typ: LLVMTypeRef);
-//op_with_name!(build_alloca, llvm::LLVMBuildAlloca, typ: LLVMTypeRef);
-op_with_name!(build_array_malloc, llvm::LLVMBuildArrayMalloc, typ: LLVMTypeRef, val: LLVMValueRef);
-op_with_name!(build_array_alloca, llvm::LLVMBuildArrayAlloca, typ: LLVMTypeRef, val: LLVMValueRef);
+build_op!(named, build_malloc, llvm::LLVMBuildMalloc, typ: Box<dyn Type>);
+build_op!(named, build_alloca, llvm::LLVMBuildAlloca, typ: Box<dyn Type>);
+build_op!(named, build_array_malloc, llvm::LLVMBuildArrayMalloc, typ: Box<dyn Type>, len: val::ConstantInt);
+build_op!(named, build_array_alloca, llvm::LLVMBuildArrayAlloca, typ: Box<dyn Type>, len: val::ConstantInt);
 
 // Working with memory
-op!(build_mem_set, llvm::LLVMBuildMemSet, ptr: LLVMValueRef, val: LLVMValueRef, size: LLVMValueRef, align: u32);
-op!(build_mem_move, llvm::LLVMBuildMemMove,
-    dest: LLVMValueRef, dest_align: u32, src: LLVMValueRef, src_align: u32, size: LLVMValueRef);
-op!(build_mem_cpy, llvm::LLVMBuildMemCpy,
-    dest: LLVMValueRef, dest_align: u32, src: LLVMValueRef, src_align: u32, size: LLVMValueRef);
+build_op!(build_mem_set, llvm::LLVMBuildMemSet,
+    ptr: Box<dyn Value>, val: val::ConstantInt, size: val::ConstantInt, align: u32);
+build_op!(build_mem_move, llvm::LLVMBuildMemMove,
+    dest: Box<dyn Value>, dest_align: u32, src: Box<dyn val::Value>, src_align: u32, size: val::ConstantInt);
+build_op!(build_mem_cpy, llvm::LLVMBuildMemCpy,
+    dest: Box<dyn Value>, dest_align: u32, src: Box<dyn Value>, src_align: u32, size: val::ConstantInt);
 
 // Pointer comparison
 op_with_name!(build_ptr_diff, llvm::LLVMBuildPtrDiff, lhs: LLVMValueRef, rhs: LLVMValueRef);
