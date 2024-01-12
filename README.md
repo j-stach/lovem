@@ -15,7 +15,11 @@
 
 
 
-
+- Currently high level of abstraction, use of dynamic type checking will affect compiling times
+but should not impact performance of the code compiled with compilers built using this crate.
+- This is for simplicity an ease of use on the Rust end
+- A more closely-wrapped version of the functions will be added later; these will maintain safety but will not
+obscure function arguments that are found in native LLVM
 
 
 
