@@ -16,4 +16,5 @@ libc = "*"
 anyhow = "1.0.79"
 llvm-sys = "130" # Uses the most current version of LLVM supported by llvmenv, 13.0.0
 derive_more = "0.99.17"
+paste = "1.0.14"
 # thiserror = "1.0.56" # TODO Use to build error types in final version?

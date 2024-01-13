@@ -98,6 +98,17 @@ macro_rules! llvm_value {
     };
 }
 
+// TODO Implement these for respective types, and see if any functions should fall under the trait
+pub trait Number: Value {}
+pub trait Integer: Number {}
+// Bools, ints, unsigned, etc. Differentiate and assign.
+// Implement these for Rust integer types too.
+// Conversion between LLVMValueRef and integers?
+pub trait FloatingPoint: Number {}
+
+pub trait Aggregate: Value {}
+pub trait Collection: Aggregate {}
+
 llvm_value!(Argument);
 llvm_value!(BasicBlock);
 llvm_value!(MemoryUse);
@@ -125,6 +136,8 @@ llvm_value!(InlineAsm);
 llvm_value!(Instruction);
 llvm_value!(Poison);
 
+/// Represents the subtype of Value within opaque LLVM
+pub use llvm_sys::LLVMValueKind::*;
 /// Wraps a naked LLVMValueRef with the corresponding safe type & stores it on the heap
 pub fn value_from_ref(val_ref: LLVMValueRef) -> Box<dyn Value> {
     unsafe { match llvm::LLVMGetValueKind(val_ref) {

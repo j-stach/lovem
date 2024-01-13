@@ -22,6 +22,8 @@ but should not impact performance of the code compiled with compilers built usin
 obscure function arguments that are found in native LLVM
 
 
+#### Expect breaking changes in all new versions before 0.1.0
+
 
 
 

@@ -36,6 +36,8 @@ pub trait Type: Wrapper<Llvm = LLVMTypeRef> {
     }
 }
 
+/// Represents the subtype of Type within opaque LLVM
+pub use llvm_sys::LLVMTypeKind::*;
 /// Wraps a naked LLVMTypeRef with the corresponding safe type & stores it on the heap
 pub fn type_from_ref(typ_ref: LLVMTypeRef) -> Box<dyn Type> {
     unsafe { match llvm::LLVMGetTypeKind(typ_ref) {
@@ -98,10 +100,15 @@ macro_rules! llvm_type_with_assoc {
 }
 
 // Pointers
+pub trait Reference: Type {}
 llvm_type_with_assoc!(Pointer, llvm::LLVMPointerType, addr: u32);
 llvm_type!(Void, llvm::LLVMVoidType);
 
+// TODO Implement these for respective types, and see if any functions should fall under the trait
+pub trait Number: Type {}
+
 // Integer
+pub trait Integer: Number {} // TODO Do these all create the same type under the hood? Can i condense?
 llvm_type!(Int1, llvm::LLVMInt1Type);
 llvm_type!(Int8, llvm::LLVMInt8Type);
 llvm_type!(Int16, llvm::LLVMInt16Type);
@@ -111,6 +118,7 @@ llvm_type!(Int128, llvm::LLVMInt128Type);
 llvm_type!(Int, llvm::LLVMIntType, num_bits: u32);
 
 // Floating Point
+pub trait FloatingPoint: Number {}
 llvm_type!(Float, llvm::LLVMFloatType);
 llvm_type!(BFloat, llvm::LLVMBFloatType);
 llvm_type!(Double, llvm::LLVMDoubleType);
@@ -119,6 +127,7 @@ llvm_type!(FP128, llvm::LLVMFP128Type);
 llvm_type!(PPCFP128, llvm::LLVMPPCFP128Type);
 
 // Collections
+pub trait Collection: Reference {}
 llvm_type_with_assoc!(ScalableVector, llvm::LLVMScalableVectorType, size: u32);
 llvm_type_with_assoc!(Vector, llvm::LLVMVectorType, size: u32);
 llvm_type_with_assoc!(Array, llvm::LLVMArrayType, size: u32);

@@ -46,14 +46,13 @@ macro_rules! wrap {
 }
 
 pub trait NonWrapper {
-    type Llvm;
-    unsafe fn expose(&self) -> &Self::Llvm;
-}
-
-impl NonWrapper for u32 {
-    type Llvm = Self;
     unsafe fn expose(&self) -> &Self { &self }
 }
+
+impl NonWrapper for u32 {}
+impl NonWrapper for llvm_sys::LLVMOpcode {}
+impl NonWrapper for llvm_sys::LLVMIntPredicate {}
+impl NonWrapper for llvm_sys::LLVMRealPredicate {}
 
 pub trait WrapperCollection {
     type Llvm;
