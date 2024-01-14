@@ -15,9 +15,27 @@ impl super::types::Type for MetadataType {}
 pub use super::values::MetadataAsValue;
 
 wrapper!(MetadataNode, LLVMNamedMDNodeRef);
+impl MetadataNode {
+    pub fn name(&self) -> String {
+        let ref mut len: usize = 0;
+        cstr_to_str!(llvm_sys::core::LLVMGetNamedMetadataName(self.0, len)).to_string()
+    }
+}
 
 // Attribute
 wrapper!(Attribute, LLVMAttributeRef);
 
 
-//    LLVMGetNamedMetadataName⚠  // md
+
+
+
+
+
+
+
+
+
+
+
+
+

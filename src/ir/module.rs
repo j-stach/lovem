@@ -3,8 +3,9 @@ use llvm_sys::prelude::*;
 use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
-use super::context::Context;
+use crate::support::pass as pm;
 
+use super::context::Context;
 use super::{metadata as md, values as val, types as typ};
 
 
@@ -19,7 +20,14 @@ impl Module {
 
     // TODO Docs
     pub fn clone_module(&self) -> Self {
-        Self(unsafe { llvm::LLVMCloneModule(self.0) })
+        unsafe { Self(llvm::LLVMCloneModule(self.0)) }
+    }
+
+    // TODO Docs
+    pub fn link(&self, other: Self) -> Result<(), anyhow::Error> {
+        let link = unsafe { llvm_sys::linker::LLVMLinkModules2(self.0, expose!(other)) };
+        if link == 0 { return Ok(()) }
+        else { return Err(anyhow::anyhow!("Unable to link modules")) }
     }
 
     // TODO Docs
@@ -81,25 +89,37 @@ impl Module {
     }
 
     // TODO Docs
-    pub fn inline_asm(&self) -> String {
+    pub fn get_inline_asm(&self) -> String {
         let ref mut len = 0usize;
         cstr_to_str!(llvm::LLVMGetModuleInlineAsm(self.0, len)).to_string()
     }
 
     // TODO Docs
-    pub fn get_module_flag(&self, key: &str) -> md::ActualMetadata {
+    pub fn get_data_layout(&self) -> crate::support::target::TargetData {
+        unsafe { crate::support::target::TargetData::wrap(
+            llvm_sys::target::LLVMGetModuleDataLayout(self.0)
+        )}
+    }
+
+    // TODO Docs
+    pub fn set_data_layout(&self, data: crate::support::target::TargetData) {
+        unsafe { llvm_sys::target::LLVMSetModuleDataLayout(self.0, expose!(data)) }
+    }
+
+    // TODO Docs
+    pub fn get_flag(&self, key: &str) -> md::ActualMetadata {
         unsafe { md::ActualMetadata::wrap(
             llvm::LLVMGetModuleFlag(self.0, str_to_cstr!(key), key.len())
         )}
     }
 
     // TODO Docs
-    pub fn add_module_flag(&self, behavior: FlagBehavior, key: &str, metadata: md::ActualMetadata) {
+    pub fn add_flag(&self, behavior: FlagBehavior, key: &str, metadata: md::ActualMetadata) {
         unsafe { llvm::LLVMAddModuleFlag(self.0, behavior.to_llvm(), str_to_cstr!(key), key.len(), expose!(metadata)) }
     }
 
     // TODO Docs
-    pub fn copy_module_flags(&self) -> Vec<ModuleFlag> {
+    pub fn copy_flags(&self) -> Vec<ModuleFlag> {
         let ref mut len: usize = 0;
         let flags = unsafe { std::slice::from_raw_parts(llvm::LLVMCopyModuleFlagsMetadata(self.0, len), *len) };
         flags.iter().map(|o| ModuleFlag(*o)).collect()
@@ -138,12 +158,12 @@ impl Module {
     }
 
     // TODO Docs
-    pub fn create_function_pass_manager(&self) -> PassManager {
-        unsafe { PassManager(llvm::LLVMCreateFunctionPassManagerForModule(self.0)) }
+    pub fn create_function_pass_manager(&self) -> pm::PassManager {
+        unsafe { pm::PassManager::wrap(llvm::LLVMCreateFunctionPassManagerForModule(self.0)) }
     }
 
     // TODO Docs
-    pub fn run_pass_manager(&self, pass_manager: PassManager) -> Result<(), anyhow::Error> {
+    pub fn run_pass_manager(&self, pass_manager: pm::PassManager) -> Result<(), anyhow::Error> {
         let run = unsafe { llvm::LLVMRunPassManager(expose!(pass_manager), self.0) };
         if run > 0 { return Ok(()) }
         else { return Err(anyhow::anyhow!("Function was not run!")) }
@@ -195,49 +215,11 @@ impl ModuleProvider {
     }
 
     // TODO Docs
-    pub fn create_function_pass_manager(&self) -> PassManager {
-        unsafe { PassManager(llvm::LLVMCreateFunctionPassManager(self.0)) }
-    }
-
-
-}
-
-
-// TODO Docs
-wrapper!(PassManager, LLVMPassManagerRef);
-impl PassManager {
-
-// TODO Docs
-    pub fn new() -> Self {
-        unsafe { Self(llvm::LLVMCreatePassManager()) }
-    }
-
-    // TODO Docs
-    pub fn dispose(&self) {
-        unsafe { llvm::LLVMDisposePassManager(self.0) }
-    }
-
-    // TODO Docs
-    pub fn finalize(&self) -> Result<(), anyhow::Error> {   // TODO Descriptive errors
-        let finalize = unsafe { llvm::LLVMFinalizeFunctionPassManager(self.0) };
-        if finalize > 0 { return Ok(()) }
-        else { return Err(anyhow::anyhow!("Pass manager not finalized!")) }
-    }
-
-    // TODO Docs
-    pub fn initialize(&self) -> Result<(), anyhow::Error> {   // TODO Descriptive errors
-        let initialize = unsafe { llvm::LLVMInitializeFunctionPassManager(self.0) };
-        if initialize > 0 { return Ok(()) }
-        else { return Err(anyhow::anyhow!("Pass manager not initialized!")) }
-    }
-
-    // TODO Docs
-    pub fn run_function(&self, function: val::Function) -> Result<(), anyhow::Error> {   // TODO Descriptive errors
-        let run = unsafe { llvm::LLVMRunFunctionPassManager(self.0, expose!(function)) };
-        if run > 0 { return Ok(()) }
-        else { return Err(anyhow::anyhow!("Function was not run!")) }
+    pub fn create_function_pass_manager(&self) -> pm::PassManager {
+        unsafe { pm::PassManager::wrap(llvm::LLVMCreateFunctionPassManager(self.0)) }
     }
 }
+
 
 // TODO Docs
 wrapper!(ModuleFlag, LLVMModuleFlagEntry);

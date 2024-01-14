@@ -14,17 +14,17 @@ pub trait Value: Wrapper<Llvm = LLVMValueRef> {
 
     // TODO Docs
     fn type_of(&self) -> Box<dyn Type> {
-        type_from_ref(unsafe { llvm::LLVMTypeOf(expose!(self)) })
+        unsafe { type_from_ref(llvm::LLVMTypeOf(expose!(self))) }
     }
 
     // TODO Docs
     fn as_basic_block(&self) -> bb::Block {
-        bb::Block::wrap(unsafe { llvm::LLVMValueAsBasicBlock(expose!(self)) })
+        unsafe { bb::Block::wrap(llvm::LLVMValueAsBasicBlock(expose!(self))) }
     }
 
     // TODO Docs
     fn as_metadata(&self) -> md::ActualMetadata {
-        md::ActualMetadata::wrap(unsafe { llvm::LLVMValueAsMetadata(expose!(self)) })
+        unsafe { md::ActualMetadata::wrap(llvm::LLVMValueAsMetadata(expose!(self))) }
     }
 
     // TODO Docs
@@ -70,7 +70,7 @@ pub trait Value: Wrapper<Llvm = LLVMValueRef> {
 
     // TODO Docs
     fn get_allocated_type(&self) -> Box<dyn Type> {
-        type_from_ref(unsafe { llvm::LLVMGetAllocatedType(expose!(self)) })
+        unsafe { type_from_ref(llvm::LLVMGetAllocatedType(expose!(self))) }
     }
 
     // TODO Docs

@@ -7,12 +7,6 @@ use crate::wrapper::{Wrapper, NonWrapper};
 use super::{types as typ, values as val, metadata as md, block as bb};
 use self::{typ::Type, val::Value};
 
-/*
-    !! WARNING !!
-
-    Types beginning in "LLVM" are unsafe pointers and should not be trusted.
-*/
-
 
 wrapper!(Builder, LLVMBuilderRef);
 
@@ -61,7 +55,7 @@ impl Builder {
 
     /// TODO Docs
     pub fn get_default_fp_math_tag(&self) -> md::ActualMetadata {
-        md::ActualMetadata::wrap(unsafe { llvm::LLVMBuilderGetDefaultFPMathTag(self.0) })
+        unsafe { md::ActualMetadata::wrap(llvm::LLVMBuilderGetDefaultFPMathTag(self.0)) }
     }
 
     /// TODO Docs

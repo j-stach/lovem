@@ -107,6 +107,14 @@ impl Context {
         };
         type_from_ref(intrinsic)
     }
+
+    pub fn int_ptr_type_for_as(&self, data: crate::support::target::TargetData,  as_: u32) -> Box<dyn Type> {
+        unsafe { type_from_ref(llvm_sys::target::LLVMIntPtrTypeForASInContext(self.0, expose!(data), as_)) }
+    }
+
+    pub fn int_ptr_type(&self, data: crate::support::target::TargetData) -> Box<dyn Type> {
+        unsafe { type_from_ref(llvm_sys::target::LLVMIntPtrTypeInContext(self.0, expose!(data))) }
+    }
 }
 
 
