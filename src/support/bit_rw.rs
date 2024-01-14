@@ -73,7 +73,7 @@ impl Binary {
         }
     }
 
-    pub fn copy_to_memory_buffer(&self) -> mb::MemoryBuffer {
+    pub fn copy_memory_buffer(&self) -> mb::MemoryBuffer {
         unsafe { mb::MemoryBuffer::wrap(obj::LLVMBinaryCopyMemoryBuffer(self.0)) }
     }
 
@@ -85,6 +85,33 @@ impl Binary {
         unsafe { obj::LLVMDisposeBinary(self.0) }
     }
 
+    pub fn macho_universal_binary_copy_for_arch(&self, arch: &str) -> Result<Binary, anyhow::Error> {
+        let ref mut message: *mut std::ffi::c_char = std::ptr::null_mut();
+        let result = unsafe { obj::LLVMMachOUniversalBinaryCopyObjectForArch(self.0, str_to_cstr!(arch), arch.len(), message) };
+        if message.is_null() { return Ok(Binary::wrap(result)) }
+        else {
+            let message = unsafe { std::ffi::CString::from_raw(*message) };
+            return Err(anyhow::anyhow!("Failed to copy binary: {}", message.to_string_lossy()))
+        }
+    }
+
+    pub fn copy_section_iterator(&self) -> SectionIterator {
+        unsafe { SectionIterator::wrap(obj::LLVMObjectFileCopySectionIterator(self.0)) }
+    }
+
+    pub fn copy_symbol_iterator(&self) -> SymbolIterator {
+        unsafe { SymbolIterator::wrap(obj::LLVMObjectFileCopySymbolIterator(self.0)) }
+    }
+
+    pub fn ends_in_section_iterator(&self, section: &SectionIterator) -> bool {
+        let result = unsafe { obj::LLVMObjectFileIsSectionIteratorAtEnd(self.0, expose!(section)) };
+        if result != 0 { return true } else { return false }
+    }
+
+    pub fn ends_in_symbol_iterator(&self, symbol: &SymbolIterator) -> bool {
+        let result = unsafe { obj::LLVMObjectFileIsSymbolIteratorAtEnd(self.0, expose!(symbol)) };
+        if result != 0 { return true } else { return false }
+    }
 }
 
 
@@ -113,6 +140,10 @@ impl RelocationIterator {
 
     pub fn get_value_string(&self) -> String {
         cstr_to_str!(obj::LLVMGetRelocationValueString(self.0)).to_string()
+    }
+
+    pub fn move_to_next(&self) {
+        unsafe { obj::LLVMMoveToNextRelocation(self.0) }
     }
 
 }
@@ -154,19 +185,11 @@ impl SectionIterator {
         let result = unsafe { obj::LLVMIsRelocationIteratorAtEnd(self.0, expose!(relocation)) };
         if result != 0 { return true } else { return false }
     }
-}
 
-/*
-LLVMMachOUniversalBinaryCopyObjectForArch⚠
-LLVMMoveToContainingSection⚠
-LLVMMoveToNextRelocation⚠
-LLVMMoveToNextSection⚠
-LLVMMoveToNextSymbol⚠
-LLVMObjectFileCopySectionIterator⚠
-LLVMObjectFileCopySymbolIterator⚠
-LLVMObjectFileIsSectionIteratorAtEnd⚠
-LLVMObjectFileIsSymbolIteratorAtEnd⚠
-*/
+    pub fn move_to_next(&self) {
+        unsafe { obj::LLVMMoveToNextSection(self.0) }
+    }
+}
 
 
 wrapper!(SymbolIterator, obj::LLVMSymbolIteratorRef);
@@ -188,19 +211,22 @@ impl SymbolIterator {
         unsafe { obj::LLVMGetSymbolSize(self.0) }
     }
 
+    pub fn move_to_containing(&self, section: &SectionIterator) {
+        unsafe { obj::LLVMMoveToContainingSection(expose!(section), self.0) }
+    }
+
+    pub fn move_to_next(&self) {
+        unsafe { obj::LLVMMoveToNextSymbol(self.0) }
+    }
+
 }
 
 
 
-/*
-    LLVMGetBitcodeModule2⚠
-    LLVMGetBitcodeModuleInContext2⚠
-    LLVMParseBitcode2⚠
-    LLVMParseBitcodeInContext2⚠
 
 
-        LLVMWriteBitcodeToFD⚠
-    LLVMWriteBitcodeToFile⚠
-    LLVMWriteBitcodeToFileHandle⚠
-    LLVMWriteBitcodeToMemoryBuffer⚠
- */
+
+
+
+
+
