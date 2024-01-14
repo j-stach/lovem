@@ -2,7 +2,7 @@
 pub mod init;
 pub mod linker;
 pub mod target;
-pub mod object;
+pub mod bit_rw;
 
 
 use llvm_sys::support as llvm;

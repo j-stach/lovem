@@ -312,6 +312,10 @@ impl TargetMachine {
         unsafe { tm::LLVMSetTargetMachineAsmVerbosity(self.0, verbose) }
     }
 
+    pub fn add_analysis_passes(&self, passman: crate::exec::pass::PassManager) {
+        unsafe { tm::LLVMAddAnalysisPasses(self.0, expose!(passman)) }
+    }
+
     pub fn emit_to_file(&self, module: ml::Module, filepath: &str, codegen: LLVMCodeGenFileType) -> Result<(), anyhow::Error> {
         let ref mut msg = std::ptr::null_mut();
         let filepath =  std::ffi::CString::new(filepath).expect("Convert &string to CString").into_raw();

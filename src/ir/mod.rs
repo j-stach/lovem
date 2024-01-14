@@ -9,6 +9,18 @@ pub mod memory_buffer;
 pub mod intrinsics;
 pub mod metadata;
 
+use super::wrapper::Wrapper;
+
+pub fn parse_ir_in_context(context: &self::context::Context, buffer: &self::memory_buffer::MemoryBuffer) -> Result<self::module::Module, anyhow::Error> {
+    let ref mut module: llvm_sys::prelude::LLVMModuleRef = std::ptr::null_mut();
+    let ref mut message: *mut std::ffi::c_char = std::ptr::null_mut();
+    let result = unsafe { llvm_sys::ir_reader::LLVMParseIRInContext(expose!(context), expose!(buffer), module, message) };
+    if result == 0 { return Ok(self::module::Module::wrap(*module)) }
+    else {
+        let message = unsafe { std::ffi::CString::from_raw(*message) };
+        return Err(anyhow::anyhow!("Error parsing IR: {}", message.to_string_lossy()))
+    }
+}
 
 
 /*
