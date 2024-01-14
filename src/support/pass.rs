@@ -230,15 +230,15 @@ macro_rules! pass_option {
     }
 }
 
-pass_option!(boolean,   set_call_graph_profile,     pb::LLVMPassBuilderOptionsSetCallGraphProfile);
-pass_option!(boolean,   set_debug_logging,          pb::LLVMPassBuilderOptionsSetDebugLogging);
-pass_option!(boolean,   set_forget_scev_in_unroll,  pb::LLVMPassBuilderOptionsSetForgetAllSCEVInLoopUnroll);
-pass_option!(boolean,   set_loop_interleaving,      pb::LLVMPassBuilderOptionsSetLoopInterleaving);
-pass_option!(boolean,   set_loop_unrolling,         pb::LLVMPassBuilderOptionsSetLoopUnrolling);
-pass_option!(boolean,   set_loop_vectorization,     pb::LLVMPassBuilderOptionsSetLoopVectorization);
-pass_option!(boolean,   set_loop_merge_functions,   pb::LLVMPassBuilderOptionsSetMergeFunctions);
-pass_option!(boolean,   set_slp_vectorization,      pb::LLVMPassBuilderOptionsSetSLPVectorization);
-pass_option!(boolean,   set_verify_each,            pb::LLVMPassBuilderOptionsSetVerifyEach);
+pass_option!(boolean, set_call_graph_profile,           pb::LLVMPassBuilderOptionsSetCallGraphProfile);
+pass_option!(boolean, set_debug_logging,                pb::LLVMPassBuilderOptionsSetDebugLogging);
+pass_option!(boolean, set_forget_scev_in_unroll,        pb::LLVMPassBuilderOptionsSetForgetAllSCEVInLoopUnroll);
+pass_option!(boolean, set_loop_interleaving,            pb::LLVMPassBuilderOptionsSetLoopInterleaving);
+pass_option!(boolean, set_loop_unrolling,               pb::LLVMPassBuilderOptionsSetLoopUnrolling);
+pass_option!(boolean, set_loop_vectorization,           pb::LLVMPassBuilderOptionsSetLoopVectorization);
+pass_option!(boolean, set_loop_merge_functions,         pb::LLVMPassBuilderOptionsSetMergeFunctions);
+pass_option!(boolean, set_slp_vectorization,            pb::LLVMPassBuilderOptionsSetSLPVectorization);
+pass_option!(boolean, set_verify_each,                  pb::LLVMPassBuilderOptionsSetVerifyEach);
 pass_option!(cap, set_licm_mssa_no_acc_promotion_cap,   pb::LLVMPassBuilderOptionsSetLicmMssaNoAccForPromotionCap);
 pass_option!(cap, set_licm_mssa_opt_cap,                pb::LLVMPassBuilderOptionsSetLicmMssaOptCap);
 
