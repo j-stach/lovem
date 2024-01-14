@@ -2,7 +2,7 @@
 pub mod init;
 pub mod linker;
 pub mod target;
-pub mod transforms;
+pub mod pass;
 pub mod analysis;
 
 
