@@ -3,7 +3,7 @@ use llvm_sys::prelude::*;
 use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
-use crate::support::pass as pm;
+use crate::exec::pass as pm;
 
 use super::context::Context;
 use super::{metadata as md, values as val, types as typ};

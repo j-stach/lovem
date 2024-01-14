@@ -1,7 +1,7 @@
 
 
 pub trait Wrapper {
-    type Llvm;
+    type Llvm: Copy;
     fn wrap(llvm: Self::Llvm) -> Self where Self: Sized;
     unsafe fn expose(&self) -> &Self::Llvm;
     fn is_wrapper(&self) -> bool { true }

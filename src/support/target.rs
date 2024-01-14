@@ -6,6 +6,7 @@ pub use llvm_sys::target::LLVMByteOrdering;
 
 use crate::wrapper::Wrapper;
 use crate::ir::{types as typ, values as val, module as ml, context as cx, memory_buffer as mb};
+use crate::exec::pass as pm;
 
 
 macro_rules! init {
@@ -210,7 +211,7 @@ impl TargetData {
 
 wrapper!(TargetLibraryInfo, tgt::LLVMTargetLibraryInfoRef);
 impl TargetLibraryInfo {
-    pub fn add_info(&self, pass_mgr: ml::PassManager) {
+    pub fn add_info(&self, pass_mgr: pm::PassManager) {
         unsafe { tgt::LLVMAddTargetLibraryInfo(self.0, expose!(pass_mgr)) }
     }
 }

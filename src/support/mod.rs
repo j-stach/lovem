@@ -2,8 +2,7 @@
 pub mod init;
 pub mod linker;
 pub mod target;
-pub mod pass;
-pub mod analysis;
+pub mod object;
 
 
 use llvm_sys::support as llvm;
