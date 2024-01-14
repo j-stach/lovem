@@ -163,7 +163,7 @@ impl LtoCodegen {
     pub fn set_pic_model(&self, model: LtoCodegenModel) -> Result<(), anyhow::Error> {
         let result = unsafe { lto::lto_codegen_set_pic_model(self.0, model) };
         if result > 0 { return Ok(()) }
-        else { return Err(anyhow::anyhow!("Unable to set debug model.")) }
+        else { return Err(anyhow::anyhow!("Unable to set pic model.")) }
     }
 
     pub fn set_should_embed_uselists(&self, opt: bool) {
@@ -394,7 +394,7 @@ impl ThinLtoCodegen {
     pub fn set_pic_model(&self, model: LtoCodegenModel) -> Result<(), anyhow::Error> {
         let result = unsafe { lto::thinlto_codegen_set_pic_model(self.0, model) };
         if result > 0 { return Ok(()) }
-        else { return Err(anyhow::anyhow!("Unable to set debug model.")) }
+        else { return Err(anyhow::anyhow!("Unable to set pic model.")) }
     }
 
     pub fn set_savetemps_dir(&self, dir_path: &str) {
