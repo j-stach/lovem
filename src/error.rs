@@ -3,15 +3,14 @@ use llvm_sys::{error as err, error_handling as eh};
 
 use super::wrapper::Wrapper;
 
-///! Note:
-///! "LLVMErrorRef" is an alias for "*mut LLVMOpaqueError"
-///! "LLVMErrorTypeId" is an alias for "*const c_void"
 
 /// TODO Docs
 pub const SUCCESS: libc::c_int = err::LLVMErrorSuccess; // Just zero with extra steps
 
 
+// "LLVMErrorRef" is an alias for "*mut LLVMOpaqueError"
 wrapper!(Error, err::LLVMErrorRef);
+// "LLVMErrorTypeId" is an alias for "*const c_void"
 wrapper!(ErrorType, err::LLVMErrorTypeId);
 
 // TODO Revaluate, may be a bug
@@ -57,9 +56,8 @@ impl Error {
     }
 }
 
-///! Note:
-///! "LLVMFatalErrorHandler" is a type alias for Option<extern "C" fn(Reason: *const c_char)>"
-
+/// Note:
+/// "LLVMFatalErrorHandler" is a type alias for Option<extern "C" fn(Reason: *const c_char)>"
 /// TODO Docs
 pub struct FatalErrorHandler(eh::LLVMFatalErrorHandler);
 

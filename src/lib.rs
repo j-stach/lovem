@@ -7,18 +7,20 @@ extern crate anyhow; // TODO Transition to thiserror
 extern crate paste;
 
 
-#[macro_use]
-pub mod convert;
+// Lovem features
+#[macro_use] pub mod utils;
+#[macro_use] pub mod wrapper;
 
-#[macro_use]
-pub mod wrapper;
+
+// LLVM representations
+pub mod ir;
 
 pub mod error;
 pub mod diagnostics;
 
-pub mod ir;
-
-
+pub mod support;
+pub mod exec;
+pub mod debug;
 
 
 
