@@ -174,6 +174,7 @@ impl Function {
     pub fn num_params(&self) -> u32 {
         unsafe { llvm::LLVMCountParamTypes(self.0) }
     }
+
 }
 
 wrapper!(Struct, LLVMTypeRef);

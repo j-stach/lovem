@@ -276,7 +276,7 @@ build_op!(named, build_bin_op, llvm::LLVMBuildBinOp, op: LLVMOpcode, lhs: Box<dy
 
 // Integer math
 build_op!(named, build_neg, llvm::LLVMBuildNeg, val: Box<dyn val::Number>);
-build_op!(named, build_add, llvm::LLVMBuildAdd, lhs: Box<dyn val::Number>, rhs: Box<dyn val::Number>);
+build_op!(named, build_add, llvm::LLVMBuildAdd, lhs: Box<dyn Value>, rhs: Box<dyn Value>);
 build_op!(named, build_sub, llvm::LLVMBuildSub, lhs: Box<dyn val::Number>, rhs: Box<dyn val::Number>);
 build_op!(named, build_mul, llvm::LLVMBuildMul, lhs: Box<dyn val::Number>, rhs: Box<dyn val::Number>);
 build_op!(named, build_sdiv, llvm::LLVMBuildSDiv, lhs: Box<dyn val::Integer>, rhs: Box<dyn val::Integer>);

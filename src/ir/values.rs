@@ -115,6 +115,23 @@ llvm_value!(MemoryUse);
 llvm_value!(MemoryDef);
 llvm_value!(MemoryPhi);
 llvm_value!(Function);
+impl Function {
+
+    pub fn params(&self) -> Vec<Box<dyn Value>> {
+        let ref mut args = std::ptr::null_mut();
+        unsafe {
+            llvm::LLVMGetParams(self.0, args);
+            let len = find_size!(&args);
+            let args = std::slice::from_raw_parts(args, len);
+            let args: Vec<_> = args.into_iter().map(|a| value_from_ref(*a)).collect();
+            return args
+        }
+    }
+
+    pub fn param(&self, index: u32) -> Box<dyn Value> {
+        unsafe { value_from_ref(llvm::LLVMGetParam(self.0, index)) }    // TODO Could return "None"
+    }
+}
 llvm_value!(GlobalAlias);
 llvm_value!(GlobalIFunc);
 llvm_value!(GlobalVariable);

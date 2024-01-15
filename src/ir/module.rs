@@ -79,7 +79,7 @@ impl Module {
     }
 
     // TODO Docs
-    pub fn dump(self) {
+    pub fn dump(&self) {
         unsafe { llvm::LLVMDumpModule(self.0) }
     }
 

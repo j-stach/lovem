@@ -155,7 +155,6 @@ pub fn parse_ir_in_context(context: &self::context::Context, buffer: &self::memo
     LLVMGetParam⚠
     LLVMGetParamParent⚠
     LLVMGetParamTypes⚠
-    LLVMGetParams⚠
     LLVMGetParentCatchSwitch⚠
     LLVMGetPersonalityFn⚠
     LLVMGetPointerAddressSpace⚠

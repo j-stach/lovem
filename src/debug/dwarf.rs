@@ -31,7 +31,7 @@ impl DIBuilder {
 impl DIBuilder {
     pub fn create_array_type(&self, size: u64, align: u32, typ: ActualMetadata, subscripts: Vec<ActualMetadata>) -> ActualMetadata {
         unsafe { ActualMetadata::wrap(
-            llvm::LLVMDIBuilderCreateArrayType(self.0, size, align, expose!(typ), expose_array!(subscripts), subscripts.len())
+            llvm::LLVMDIBuilderCreateArrayType(self.0, size, align, expose!(typ), expose_array!(subscripts), size!(subscripts))
         )}
     }
 
@@ -110,7 +110,7 @@ impl DIBuilder {
         file: ActualMetadata,
         line: u32,
         size: u64,
-        offset: u64,
+        offset: u32,
         storage_offset: u64,
         flags: LLVMDIFlags,
         derived_from: ActualMetadata,
@@ -133,7 +133,7 @@ impl DIBuilder {
                 flags,
                 expose!(derived_from),
                 expose_array!(elements),
-                elements.len(),
+                size!(elements),
                 expose!(vtable_holder),
                 expose!(template_params_node),
                 str_to_cstr!(unique_id),
@@ -184,7 +184,7 @@ impl DIBuilder {
     }
 
     pub fn create_constant_value_expression(&self, val: i64) -> ActualMetadata {
-        unsafe { ActualMetadata::Wrap(
+        unsafe { ActualMetadata::wrap(
             llvm::LLVMDIBuilderCreateConstantValueExpression(self.0, val)
         )}
     }

@@ -46,8 +46,14 @@ macro_rules! bool_to_llvm {
     }}
 }
 
-
-
-
+macro_rules! find_size {
+    ($e:expr) => {{
+        let mut len = 0;
+        while !$e.add(len).is_null() {
+            len += 1;
+        }
+        len
+    }}
+}
 
 

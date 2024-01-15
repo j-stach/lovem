@@ -2,7 +2,7 @@
 use llvm_sys::prelude::*;
 use llvm_sys::LLVMDiagnosticHandler;
 
-use super::wrapper::Wrapper;
+use crate::wrapper::Wrapper;
 
 
 // Diagnostics
