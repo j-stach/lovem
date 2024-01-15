@@ -9,10 +9,10 @@ wrapper!(ActualMetadata, LLVMMetadataRef);
 
 // Metadata as type
 wrapper!(MetadataType, LLVMTypeRef);
-impl super::types::Type for MetadataType {}
+impl crate::ir::types::Type for MetadataType {}
 
 // Metadata as value
-pub use super::values::MetadataAsValue;
+pub use crate::ir::values::MetadataAsValue;
 
 wrapper!(MetadataNode, LLVMNamedMDNodeRef);
 impl MetadataNode {

@@ -5,9 +5,10 @@ use llvm_sys::{*, prelude::*};
 use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
-use crate::diagnostics as dx;
+use crate::debug::{diagnostics as dx, metadata as md};
+
 use super::types::{Type, type_from_ref};
-use super::{builder as br, values as val, metadata as md, block as bb, module as ml};
+use super::{builder as br, values as val, block as bb, module as ml};
 
 
 wrapper!(Context, LLVMContextRef);

@@ -5,7 +5,7 @@ use llvm_sys::core as llvm;
 use crate::wrapper::Wrapper;
 
 use super::types::{Type, type_from_ref};
-use super::metadata as md;
+use crate::debug::metadata as md;
 
 use super::block as bb;
 

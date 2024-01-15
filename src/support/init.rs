@@ -6,7 +6,6 @@ use crate::wrapper::Wrapper;
 
 
 wrapper!(Initializer, LLVMPassRegistryRef);
-
 macro_rules! initializer {
     ($initializer:ident, $fn:path) => {
         impl Initializer {

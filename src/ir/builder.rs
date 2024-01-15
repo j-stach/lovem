@@ -4,7 +4,8 @@ use llvm_sys::core as llvm;
 
 use crate::wrapper::{Wrapper, NonWrapper};
 
-use super::{types as typ, values as val, metadata as md, block as bb};
+use crate::debug::metadata as md;
+use super::{types as typ, values as val, block as bb};
 use self::{typ::Type, val::Value};
 
 

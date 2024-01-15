@@ -24,6 +24,20 @@ macro_rules! wrapper {
     }
 }
 
+macro_rules! impl_wrapper {
+    ($t:ident, $llvm:ty) => {
+        impl Wrapper for $t {
+            type Llvm = $llvm;
+            fn wrap(llvm: $llvm) -> Self {
+                Self(llvm) // TODO Make wrap contain the unsafe block?
+            }
+            unsafe fn expose(&self) -> &$llvm {
+                &self.0
+            }
+        }
+    }
+}
+
 macro_rules! expose_array {
     ($wrapper_array:expr) => {{
         let mut exposed_array = vec![]; // TODO Test
@@ -53,13 +67,14 @@ impl NonWrapper for u32 {}
 impl NonWrapper for llvm_sys::LLVMOpcode {}
 impl NonWrapper for llvm_sys::LLVMIntPredicate {}
 impl NonWrapper for llvm_sys::LLVMRealPredicate {}
+impl NonWrapper for &String {}
 
-pub trait WrapperCollection {
+pub trait PseudoWrapper {
     type Llvm;
     unsafe fn expose(self) -> *mut Self::Llvm;
 }
 
-impl<W: Wrapper> WrapperCollection for Vec<W> {
+impl<W: Wrapper> PseudoWrapper for Vec<W> {
     type Llvm = W::Llvm;
     unsafe fn expose(self) -> *mut Self::Llvm {
         let mut exposed = vec![]; // TODO Test
@@ -67,3 +82,6 @@ impl<W: Wrapper> WrapperCollection for Vec<W> {
         exposed.as_mut_ptr()
     }
 }
+
+
+

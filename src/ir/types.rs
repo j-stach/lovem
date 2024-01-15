@@ -4,7 +4,7 @@ use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
 
-use super::metadata as md;
+use crate::debug::metadata as md;
 
 
 pub trait Type: Wrapper<Llvm = LLVMTypeRef> {

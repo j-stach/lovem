@@ -7,7 +7,6 @@ pub mod module;
 pub mod block;
 pub mod memory_buffer;
 pub mod intrinsics;
-pub mod metadata;
 
 use super::wrapper::Wrapper;
 

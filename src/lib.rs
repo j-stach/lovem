@@ -13,14 +13,13 @@ extern crate paste;
 
 
 // LLVM representations
-pub mod ir;
+pub mod ir;     // TODO Finish bulk fns
 
 pub mod error;
-pub mod diagnostics;
 
 pub mod support;
-pub mod exec;
-pub mod debug;
+pub mod exec;  // TODO Complete
+pub mod debug;  // TODO Complete
 
 
 

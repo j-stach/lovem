@@ -4,9 +4,10 @@ use llvm_sys::core as llvm;
 
 use crate::wrapper::Wrapper;
 use crate::exec::pass as pm;
+use crate::debug::metadata as md;
 
 use super::context::Context;
-use super::{metadata as md, values as val, types as typ};
+use super::{values as val, types as typ};
 
 
 // TODO Docs
