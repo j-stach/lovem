@@ -21,6 +21,9 @@ but should not impact performance of the code compiled with compilers built usin
 - A more closely-wrapped version of the functions will be added later; these will maintain safety but will not
 obscure function arguments that are found in native LLVM
 
+- intend to restrict types where possible; `values::Function` instead of `Box<dyn values::Value>`, for example.
+- they're both `LLVMValueRef` under the hood, but this makes it easier to work with, safer, more rusty
+
 
 #### Expect breaking changes in all new versions before 0.1.0
 
