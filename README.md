@@ -1,7 +1,7 @@
 
-Wrappers for LLVM in safe Rust.
+Wrappers for LLVM in safe Rust. (WIP)
 
-### WIP: Untested, should be presumed malfunctional
+### WARNING: Untested-- should be presumed malfunctional
 **Expect breaking changes in all new versions before 0.1.0**
 - The current approach with boxed dynamic types makes me want to commit to reference counting,
 since we are relying so heavily on the heap anyway.
