@@ -1,15 +1,15 @@
 
 Wrappers for LLVM in safe Rust.
 
-#### WIP: Untested, should be presumed malfunctional
-#### WIP: Expect breaking changes in all new versions before 0.1.0
+### WIP: Untested, should be presumed malfunctional
+### WIP: Expect breaking changes in all new versions before 0.1.0
 
 - The current approach with boxed dynamic types makes me want to commit to reference counting,
 since we are relying so heavily on the heap anyway.
 - This tempts me to put a Mutex on everything as well, to make lovem into a concurrency-focused library
 - Will explore the best way to pursue this; maybe interchangeable wrapper types for sync and async contexts
 
-# Notes to self
+### Notes to self
 - Note that wrapper types contain raw, unchecked pointers.
 - Mutexes would ensure that only one instance of a reference is accessed at a time.
 - Could also be done by limiting ref access to within unsafe blocks, within safe functions.
