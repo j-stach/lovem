@@ -4,7 +4,7 @@ use crate::exec::engine::ExecutionEngine as ee;
 use crate::support::target as tgt;
 
 
-#[test] fn simple_jit() -> Result<(), anyhow::Error>{
+#[test] fn simple_jit() {
     let context = Context::global();
     let module = context.create_module("Addition");
     let builder = context.create_builder();
@@ -31,13 +31,13 @@ use crate::support::target as tgt;
 
 
     ee::link_in_mcjit();
-    tgt::native_target()?;
-    tgt::native_asm_printer()?;
+    tgt::native_target().unwrap();
+    tgt::native_asm_printer().unwrap();
 
-    let engine = ee::new_for_module(&module)?;
-    let llvm_function = engine.find_function("add")?;
+    let engine = ee::new_for_module(&module).unwrap();
+    let _llvm_function = engine.find_function("add").unwrap();
 
-    Ok( unsafe {
+    unsafe {
         //let add: fn(u8, u8) -> u8 = std::mem::transmute(llvm_function);
         //let a = 2;
         //let b = 2;
@@ -45,5 +45,5 @@ use crate::support::target as tgt;
         //let sum = add(a, b);
         //println!("{} + {} = {}", a, b, sum);
         //assert_eq!(sum, 4)
-    })
+    }
 }
