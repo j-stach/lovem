@@ -183,7 +183,7 @@ impl DIBuilder {
         )}
     }
 
-    pub fn create_constant_value_expression(&self, val: i64) -> ActualMetadata {
+    pub fn create_constant_value_expression(&self, val: u64) -> ActualMetadata {
         unsafe { ActualMetadata::wrap(
             llvm::LLVMDIBuilderCreateConstantValueExpression(self.0, val)
         )}

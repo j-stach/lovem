@@ -190,7 +190,7 @@ build_op!(build_mem_copy, llvm::LLVMBuildMemCpy,
           dest: Box<dyn Value>, dest_align: u32, src: Box<dyn Value>, src_align: u32, size: val::ConstantInt);
 
 // Pointer comparison
-build_op!(named, build_ptr_diff, llvm::LLVMBuildPtrDiff, lhs: Box<dyn Value>, rhs: Box<dyn Value>);
+// TODO UPDATE: build_op!(named, build_ptr_diff, llvm::LLVMBuildPtrDiff2, lhs: Box<dyn Value>, rhs: Box<dyn Value>);
 
 // Check existence
 build_op!(named, build_is_null, llvm::LLVMBuildIsNull, val: Box<dyn Value>);
@@ -212,7 +212,6 @@ build_op!(named string, build_global_string_ptr, llvm::LLVMBuildGlobalStringPtr)
 // Variable assignment and access
 build_op!(build_store, llvm::LLVMBuildStore,  val: Box<dyn Value>, ptr: Box<dyn Value>);
 build_op!(build_free, llvm::LLVMBuildFree, ptr: Box<dyn Value>);
-build_op!(named, build_load, llvm::LLVMBuildLoad, ptr: Box<dyn Value>);
 build_op!(named, build_load_2, llvm::LLVMBuildLoad2, typ: Box<dyn Type>, ptr: Box<dyn Value>);
 build_op!(named, build_freeze, llvm::LLVMBuildFreeze, val: Box<dyn Value>);
 
@@ -266,9 +265,7 @@ build_op!(named, build_extract_value, llvm::LLVMBuildExtractValue, agg: Box<dyn 
 build_op!(named, build_insert_value, llvm::LLVMBuildInsertValue, agg: Box<dyn val::Aggregate>, val: Box<dyn Value>, index: u32);
 
 // Referencing elements (Get Element Pointer)
-build_op!(named values, build_gep, llvm::LLVMBuildGEP, val: Box<dyn Value>);
 build_op!(named values, build_gep_2, llvm::LLVMBuildGEP2, typ: Box<dyn Type>, val: Box<dyn Value>);
-build_op!(named values, build_in_bounds_gep, llvm::LLVMBuildInBoundsGEP, val: Box<dyn Value>);
 build_op!(named values, build_in_bounds_gep_2, llvm::LLVMBuildInBoundsGEP2, typ: Box<dyn Type>, val: Box<dyn Value>);
 
 // Binary operation from Opcode
@@ -328,7 +325,6 @@ build_op!(build_indirect_br, llvm::LLVMBuildIndirectBr, addr: val::BlockAddress,
 build_op!(build_unreachable, llvm::LLVMBuildUnreachable);
 
 // Functions
-build_op!(function, build_call, llvm::LLVMBuildCall);
 build_op!(function, build_call_2, llvm::LLVMBuildCall2, typ: Box<dyn Type>);
 
 // Return statements
@@ -350,7 +346,6 @@ build_op!(build_cleanup_ret, llvm::LLVMBuildCleanupRet, pad: val::BasicBlock, bl
 build_op!(named, build_landing_pad, llvm::LLVMBuildLandingPad, typ: Box<dyn Type>, pers_fun: val::Function, num_clauses: u32);
 build_op!(named, build_catch_switch, llvm::LLVMBuildCatchSwitch, pad: val::BasicBlock, unwind: bb::Block, num_handler: u32);
 
-build_op!(function, build_invoke, llvm::LLVMBuildInvoke, then: bb::Block, catch: bb::Block);
 build_op!(function, build_invoke_2, llvm::LLVMBuildInvoke2, typ: Box<dyn Type>, then: bb::Block, catch: bb::Block);
 
 build_op!(named values, build_catch_pad, llvm::LLVMBuildCatchPad, pad: val::BasicBlock);

@@ -49,10 +49,11 @@ pub fn type_from_ref(typ_ref: LLVMTypeRef) -> Box<dyn Type> {
         LLVMTypeKind::LLVMFP128TypeKind           => Box::new(FP128(typ_ref)),
         LLVMTypeKind::LLVMPPC_FP128TypeKind       => Box::new(PPCFP128(typ_ref)),
         LLVMTypeKind::LLVMLabelTypeKind           => unimplemented!(),
+        LLVMTypeKind::LLVMTargetExtTypeKind       => unimplemented!(),
         LLVMTypeKind::LLVMIntegerTypeKind         => Box::new(Int(typ_ref)),
         LLVMTypeKind::LLVMFunctionTypeKind        => Box::new(Function(typ_ref)),
         LLVMTypeKind::LLVMStructTypeKind          => Box::new(Struct(typ_ref)),
-        LLVMTypeKind::LLVMArrayTypeKind           => Box::new(Array(typ_ref)),
+        LLVMTypeKind::LLVMArrayTypeKind           => todo![], //Box::new(Array(typ_ref)),
         LLVMTypeKind::LLVMPointerTypeKind         => Box::new(Pointer(typ_ref)),
         LLVMTypeKind::LLVMVectorTypeKind          => Box::new(Vector(typ_ref)),
         LLVMTypeKind::LLVMMetadataTypeKind        => Box::new(md::MetadataType::wrap(typ_ref)),
@@ -130,7 +131,7 @@ llvm_type!(PPCFP128, llvm::LLVMPPCFP128Type);
 pub trait Collection: Reference {}
 llvm_type_with_assoc!(ScalableVector, llvm::LLVMScalableVectorType, size: u32);
 llvm_type_with_assoc!(Vector, llvm::LLVMVectorType, size: u32);
-llvm_type_with_assoc!(Array, llvm::LLVMArrayType, size: u32);
+// TODO UPDATE llvm_type_with_assoc!(Array, llvm::LLVMArrayType2, size: u32);
 
 // X86 types
 llvm_type!(X86FP80, llvm::LLVMX86FP80Type);

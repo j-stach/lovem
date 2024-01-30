@@ -1,5 +1,5 @@
 
-extern crate libc; // TODO Transition to std::ffi::* where possible
+extern crate libc;
 extern crate llvm_sys;
 
 extern crate anyhow; // TODO Transition to thiserror

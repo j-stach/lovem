@@ -180,6 +180,7 @@ pub fn value_from_ref(val_ref: LLVMValueRef) -> Box<dyn Value> {
         LLVMValueKind::LLVMConstantFPValueKind             => Box::new(ConstantFP(val_ref)),
         LLVMValueKind::LLVMConstantPointerNullValueKind    => Box::new(ConstantPointerNull(val_ref)),
         LLVMValueKind::LLVMConstantTokenNoneValueKind      => Box::new(ConstantTokenNone(val_ref)),
+        LLVMValueKind::LLVMConstantTargetNoneValueKind     => todo![],
         LLVMValueKind::LLVMMetadataAsValueValueKind        => Box::new(MetadataAsValue(val_ref)),
         LLVMValueKind::LLVMInlineAsmValueKind              => Box::new(InlineAsm(val_ref)),
         LLVMValueKind::LLVMInstructionValueKind            => Box::new(Instruction(val_ref)),

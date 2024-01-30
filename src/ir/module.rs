@@ -171,11 +171,13 @@ impl Module {
     }
 
     // TODO Docs
-    pub fn add_alias(&self, typ: Box<dyn typ::Type>, aliasee: Box<dyn val::Value>, name: &str) -> val::GlobalAlias {
-        unsafe { val::GlobalAlias::wrap(
-            llvm::LLVMAddAlias(self.0, expose!(typ), expose!(aliasee), str_to_cstr!(name))
-        )}
-    }
+
+    // TODO UPDATE
+    // pub fn add_alias(&self, typ: Box<dyn typ::Type>, aliasee: Box<dyn val::Value>, name: &str) -> val::GlobalAlias {
+    //     unsafe { val::GlobalAlias::wrap(
+    //         llvm::LLVMAddAlias2(self.0, expose!(typ), expose!(aliasee), str_to_cstr!(name))
+    //     )}
+    // }
 
     // TODO Docs
     pub fn add_function(&self, function: typ::Function, name: &str) -> val::Function {
