@@ -7,6 +7,7 @@ Wrappers for LLVM in safe Rust. (WIP)
 since we are relying so heavily on the heap anyway.
 - This tempts me to put a Mutex on everything as well, to make lovem into a concurrency-focused library
 - Will explore the best way to pursue this; maybe interchangeable wrapper types for sync and async contexts
+- An alternative would be to use impl Trait
 ------
 ### Notes to self
 Simplest safe interface?
@@ -28,6 +29,7 @@ Standardize value-handling?
 - intend to restrict types where possible; `values::Function` instead of `Box<dyn values::Value>`, for example.
 - they're both `LLVMValueRef` under the hood, but this makes it easier to work with, safer, more rusty
 - may standardize to all boxed values, eg `Box<values::Function>` or `Arc<...>`
+
 
 
 

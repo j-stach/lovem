@@ -2,11 +2,11 @@
 name = "lovem"
 version = "0.0.0"
 authors = ["j-stach"]
-description = "A safer wrapper for LLVM bindings"
+description = "Safe wrappers for LLVM (WIP)"
 license = "MIT"
 repository = "https://github.com/j-stach/lovem"
 homepage = "https://github.com/j-stach/lovem"
-# documentation = "https://docs.rs/llvm/"
+documentation = "https://github.com/j-stach/lovem"
 
 categories = ["api-bindings"]
 keywords = ["llvm"]

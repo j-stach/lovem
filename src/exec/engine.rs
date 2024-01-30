@@ -63,7 +63,7 @@ impl ExecutionEngine {
         unsafe { llvm::LLVMLinkInMCJIT() }
     }
 
-    pub fn add_global_mapping(&self, val: Box<dyn val::Value>, addr: *mut std::ffi::c_void) { // TODO Make safe
+    pub fn add_global_mapping(&self, val: impl val::Value, addr: *mut std::ffi::c_void) { // TODO Make safe
         unsafe { llvm::LLVMAddGlobalMapping(self.0, expose!(val), addr) }
     }
 
